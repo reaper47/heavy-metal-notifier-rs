@@ -1,0 +1,14 @@
+[package]
+name = "heavy-metal-notifier"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+axum = "0.7.5"
+derive_more = { version = "1.0.0", features = ["from", "display"] }
+dotenv = "0.15.0"
+maud = { version = "*", features = ["axum"] }
+tokio = { version = "1.40.0", features = ["rt-multi-thread", "signal"] }
+tower-http = { version = "0.5.2", features = ["fs"] }
+tracing = "0.1.40"
+tracing-subscriber = { version = "0.3.18", features = ["env-filter"] }
