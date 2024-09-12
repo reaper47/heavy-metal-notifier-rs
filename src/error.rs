@@ -12,6 +12,8 @@ pub enum Error {
     #[from]
     Env(std::env::VarError),
     #[from]
+    Job(tokio_cron_scheduler::JobSchedulerError),
+    #[from]
     Io(std::io::Error),
     #[from]
     Reqwest(reqwest::Error),

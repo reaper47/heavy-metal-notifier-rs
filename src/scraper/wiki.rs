@@ -2,9 +2,16 @@ use std::collections::HashMap;
 
 use scraper::{ElementRef, Html, Selector};
 
-use crate::calendar::{Calendar, Month, Release};
+use crate::{calendar::{Calendar, Month, Release}, error::Result};
 
-pub fn extract_calendar(doc: Html) -> Calendar {
+use super::client::Client;
+
+pub async fn scrape(client: &impl Client, year: i32) -> Result<Calendar> {
+    let doc = client.get(year).await?;
+    Ok(extract_calendar(doc))
+}
+
+fn extract_calendar(doc: Html) -> Calendar {
     let mut calendar = Calendar::new();
 
     let mut current_day: u8 = 1;
@@ -89,7 +96,7 @@ fn process_table(
                 calendar.add_release(month, *current_day, Release::new(artist, album))
             }
             3 => {
-                let day: Result<u8, _> = cells[0].text().collect::<String>().trim().parse();
+                let day: core::result::Result<u8, _> = cells[0].text().collect::<String>().trim().parse();
                 if let Ok(day) = day {
                     *current_day = day;
                 }
@@ -115,8 +122,7 @@ mod tests {
     use super::*;
 
     use crate::{
-        calendar::{CalendarData, Releases},
-        scraper::client::MockClient,
+        calendar::{CalendarData, Releases}, scraper::client::tests::MockClient,
     };
 
     type Result<T> = core::result::Result<T, Box<dyn std::error::Error>>;

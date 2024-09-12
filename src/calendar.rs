@@ -1,8 +1,9 @@
 use std::collections::HashMap;
 
 use reqwest::Url;
+use time::OffsetDateTime;
 
-use crate::scraper::client::Client;
+use crate::{error::Result, scraper::{client::MainClient, wiki::scrape}};
 
 pub type CalendarData = HashMap<Month, Releases>;
 
@@ -92,6 +93,17 @@ impl Calendar {
 
     pub fn get_releases(&self, month: Month, day: Day) -> Option<&Vec<Release>> {
         self.data.get(&month).and_then(|map| map.get(&day))
+    }
+
+    pub async fn update(&mut self) -> Result<()> {
+        let now = OffsetDateTime::now_utc();
+        let year = now.year();
+    
+        let client = MainClient::new();        
+        let calendar = scrape(&client, year).await?;
+        self.data = calendar.data;
+
+        Ok(())
     }
 }
 
