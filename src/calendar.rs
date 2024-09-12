@@ -130,11 +130,11 @@ mod tests {
         let mut got = Calendar::new();
         let release = Release::new("Wintersun", "Time II");
 
-        got.add_release(Month::August, 31, release.clone());
+        got.add_release(Month::August, 30, release.clone());
 
         let mut want = Calendar::new();
         want.data
-            .insert(Month::August, HashMap::from([(31, vec![release])]));
+            .insert(Month::August, HashMap::from([(30, vec![release])]));
         pretty_assertions::assert_eq!(got, want);
         Ok(())
     }
@@ -145,11 +145,11 @@ mod tests {
         let calendar = Calendar {
             data: CalendarData::from([(
                 Month::August,
-                Releases::from([(31, vec![release.clone()])]),
+                Releases::from([(30, vec![release.clone()])]),
             )]),
         };
 
-        let got = calendar.get_releases(Month::August, 31);
+        let got = calendar.get_releases(Month::August, 30);
 
         pretty_assertions::assert_eq!(got, Some(&vec![release]));
         Ok(())
