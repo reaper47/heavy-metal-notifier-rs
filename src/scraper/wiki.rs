@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use scraper::{Html, Selector};
+use scraper::{ElementRef, Html, Selector};
 
 use crate::calendar::{Calendar, Month, Release};
 
@@ -8,7 +8,7 @@ pub fn extract_calendar(doc: Html) -> Calendar {
     let mut calendar = Calendar::new();
 
     let mut current_day: u8 = 1;
-	let mut current_artist = "".to_string();
+    let mut current_artist = "".to_string();
 
     let tables: HashMap<Month, &str> = HashMap::from([
         (Month::January, "#table_January"),
@@ -25,57 +25,98 @@ pub fn extract_calendar(doc: Html) -> Calendar {
         (Month::December, "#table_December"),
     ]);
     tables.iter().for_each(|(&month, &table_id)| {
-        doc.select(&Selector::parse(&format!("{table_id} tbody tr")).unwrap())
-        .for_each(|row| {
-            let cells = row.child_elements().collect::<Vec<_>>();
-            match cells.len() {
-				1 => {
-                    let album = cells[0].text().collect::<String>();
-                    calendar.add_release(month, current_day, Release::new(current_artist.clone(), album.trim()))
-				},
-                2 => {
-                    let artist = cells[0].text().collect::<String>();
-					let artist = artist.trim();
-					current_artist = String::from(artist);
-
-                    let album = cells[1].text().collect::<String>();
-					let album = album.trim();
-
-                    calendar.add_release(month, current_day, Release::new(artist, album))
-                },
-                3 => {
-                    let day: Result<u8, _> = cells[0].text().collect::<String>().trim().parse();
-                    if let Ok(day) = day {
-                        current_day = day;
-                    }
-
-                    let artist = cells[1].text().collect::<String>();
-					let artist = artist.trim();
-					current_artist = String::from(artist);
-
-                    let album = cells[2].text().collect::<String>();
-					let album = album.trim();
-
-                    if artist != "Artist" {
-                        calendar.add_release(month, current_day, Release::new(artist, album.trim()));
-                    }
-                },
-                _ => {}
+        let selector = &Selector::parse(&table_id).unwrap();
+        let tables = doc.select(selector).collect::<Vec<_>>();
+        match tables.len() {
+            2 if month == Month::November => {
+                process_table(
+                    tables[0],
+                    &mut calendar,
+                    Month::October,
+                    &mut current_day,
+                    &mut current_artist,
+                );
+                process_table(
+                    tables[1],
+                    &mut calendar,
+                    month,
+                    &mut current_day,
+                    &mut current_artist,
+                );
             }
-        })
+            1 => process_table(
+                tables[0],
+                &mut calendar,
+                month,
+                &mut current_day,
+                &mut current_artist,
+            ),
+            _ => {}
+        }
     });
 
     calendar
 }
 
+fn process_table(
+    table: ElementRef,
+    calendar: &mut Calendar,
+    month: Month,
+    current_day: &mut u8,
+    current_artist: &mut String,
+) {
+    let selector = &Selector::parse("tbody tr").unwrap();
+    table.select(selector).for_each(|row| {
+        let cells = row.child_elements().collect::<Vec<_>>();
+        match cells.len() {
+            1 => {
+                let album = cells[0].text().collect::<String>();
+                calendar.add_release(
+                    month,
+                    *current_day,
+                    Release::new(current_artist.clone(), album.trim()),
+                )
+            }
+            2 => {
+                let artist = cells[0].text().collect::<String>();
+                let artist = artist.trim();
+                *current_artist = String::from(artist);
+
+                let album = cells[1].text().collect::<String>();
+                let album = album.trim();
+
+                calendar.add_release(month, *current_day, Release::new(artist, album))
+            }
+            3 => {
+                let day: Result<u8, _> = cells[0].text().collect::<String>().trim().parse();
+                if let Ok(day) = day {
+                    *current_day = day;
+                }
+
+                let artist = cells[1].text().collect::<String>();
+                let artist = artist.trim();
+                *current_artist = String::from(artist);
+
+                let album = cells[2].text().collect::<String>();
+                let album = album.trim();
+
+                if artist != "Artist" {
+                    calendar.add_release(month, *current_day, Release::new(artist, album.trim()));
+                }
+            }
+            _ => {}
+        }
+    })
+}
+
 #[cfg(test)]
 mod tests {
+    use super::*;
+
     use crate::{
-        calendar::*,
+        calendar::{CalendarData, Releases},
         scraper::client::MockClient,
     };
-
-    use super::*;
 
     type Result<T> = core::result::Result<T, Box<dyn std::error::Error>>;
 
@@ -85,7 +126,7 @@ mod tests {
 
         let got = client.scrape(2022).await?;
 
-		let want = Calendar {
+        let want = Calendar {
             data: CalendarData::from([
                 (Month::January, Releases::from([
 					(7, vec![
@@ -798,22 +839,639 @@ mod tests {
 				])),
             ])
         };
-		pretty_assertions::assert_eq!(got, want);
+        pretty_assertions::assert_eq!(got, want);
         Ok(())
     }
 
     #[tokio::test]
     async fn test_2023_calendar_ok() -> Result<()> {
-		let client = MockClient {};
+        let client = MockClient {};
 
         let got = client.scrape(2023).await?;
 
-		let want = Calendar {
+        let want = Calendar {
 			data: CalendarData::from([
-
-			])
+				(Month::January, Releases::from([
+					(13, vec![
+						Release::new("Ahab", "The Coral Tombs"),
+						Release::new("Beyond the Black", "Beyond the Black"),
+						Release::new("Eisregen", "Grenzgänger"),
+						Release::new("Obituary", "Dying of Everything"),
+						Release::new("Turmion Kätilöt", "Omen X"),
+						Release::new("VV", "Neon Noir"),
+					]),
+					(20, vec![
+						Release::new("Atrocity", "Okkult III"),
+						Release::new("Dark Princess", "Phoenix"),
+						Release::new("Imperium Dekadenz", "Into Sorrow Evermore"),
+						Release::new("Katatonia", " Sky Void of Stars"),
+						Release::new("Riverside", " ID.Entity"),
+						Release::new("Sabaton", "Heroes of the Great War (EP)"),
+						Release::new("Twilight Force", "At the Heart of Wintervale"),
+					]),
+					(27, vec![
+						Release::new("...And Oceans", "As in Gardens, So in Tombs"),
+						Release::new("Ablaze My Sorrow", "The Loss of All Hope (EP)"),
+						Release::new("Ronnie Romero", "Raised on Heavy Radio (covers album)"),
+						Release::new("Steve Vai", "Vai/Gash"),
+						Release::new("Uriah Heep", " Chaos & Colour"),
+					]),
+				])),
+				(Month::February, Releases::from([
+					(3, vec![
+						Release::new("All Out War", "Celestial Rot"),
+						Release::new("Korn", "Requiem Mass (EP)"),
+						Release::new("Memoriam", "Rise to Power"),
+						Release::new("Russkaja", "Turbo Polka Party"),
+						Release::new("Victor Smolski", "Guitar Force"),
+						Release::new("Xandria", "The Wonders Still Awaiting"),
+					]),
+					(10, vec![
+						Release::new("Aphyxion", "Ad Astra"),
+						Release::new("Delain", "Dark Waters"),
+						Release::new("Dream Theater", "Distance Over Time Demos (2018) (compilation album)"),
+						Release::new("In Flames", "Foregone"),
+						Release::new("Narrow Head", "Moments of Clarity"),
+						Release::new("Pierce the Veil", "The Jaws of Life"),
+						Release::new("Wig Wam", "Out of the Dark"),
+					]),
+					(17, vec![
+						Release::new("Avatar", "Dance Devil Dance"),
+						Release::new("Bridear", "Aegis of London... Live! (live album)"),
+						Release::new("Clint Lowery", "Ghostwriter (EP)"),
+						Release::new("Code Orange", "What Is Really Underneath? (remix album)"),
+						Release::new("Hellripper", "Warlocks Grim & Withered Hags"),
+						Release::new("Jason Bieler", "Postcards from the Asylum"),
+						Release::new("Man Must Die", "The Pain Behind It All"),
+						Release::new("Oceanhoarse", "Heads Will Roll"),
+						Release::new("Pigs Pigs Pigs Pigs Pigs Pigs Pigs", "Land of Sleeper"),
+						Release::new("Robin McAuley", "Alive"),
+						Release::new("See You Next Tuesday", "Distractions"),
+						Release::new("Skinflint", "Hate Spell"),
+					]),
+					(22, vec![
+						Release::new("Lovebites", "Judgement Day"),
+					]),
+					(24, vec![
+						Release::new("Azaghal", "Alttarimme on Luista Tehty"),
+						Release::new("Dope", "Blood Money, Part Zer0"),
+						Release::new("Godsmack", " Lighting Up the Sky"),
+						Release::new("Hammerhedd", "Nonetheless"),
+						Release::new("Hed PE", "70's Hits from the Pit (covers album)"),
+						Release::new("Heidevolk", "Werdekeer"),
+						Release::new("Hypno5e", "Sheol"),
+						Release::new("Insomnium", "Anno 1696"),
+						Release::new("Kauan", "ATM Revised"),
+						Release::new("Märvel", "Double Decade (compilation album)"),
+						Release::new("Necrovation", "Storm the Void/Starving Grave (EP)"),
+						Release::new("Steel Panther", "On the Prowl"),
+						Release::new("Venomous Concept", "The Good Ship Lollipop"),
+					]),
+				])),
+				(Month::March, Releases::from([
+					(1, vec![
+						Release::new("Galneryus", "Between Dread and Valor"),
+						Release::new("Lynch", "Reborn"),
+					]),
+					(3, vec![
+						Release::new("Earth Groans", "Tongue Tied (EP)"),
+						Release::new("Enslaved", " Heimdal"),
+						Release::new("Entheos", "Time Will Take Us All"),
+						Release::new("Full of Hell & Primitive Man", "Suffocating Hallucination"),
+						Release::new("Fury of Five", "Half Past Revenge (EP)"),
+						Release::new("Haken", "Fauna"),
+						Release::new("Sandrider", "Enveletration"),
+						Release::new("Sortilège", "Apocalypso"),
+					]),
+					(9, vec![
+						Release::new("Wes Borland", "Mutiny on the Starbarge"),
+					]),
+					(10, vec![
+						Release::new("For the Fallen Dreams", "For the Fallen Dreams"),
+						Release::new("Frozen Crown", "Call of the North"),
+						Release::new("Gorod", "The Orb"),
+						Release::new("Ice Age", "Waves of Loss and Power"),
+						Release::new("Isole", "Anesidora"),
+						Release::new("Minenwerfer", "Feuerwalze"),
+						Release::new("Nanowar of Steel", "Dislike to False Metal"),
+						Release::new("Otherwise", "Gawdzillionaire"),
+						Release::new("Periphery", "Periphery V: Djent Is Not a Genre"),
+						Release::new("Sacrificium", "Oblivion"),
+						Release::new("Story of the Year", "Tear Me to Pieces"),
+						Release::new("Suicide Silence", "Remember... You Must Die"),
+						Release::new("Tulus", "Fandens Kall"),
+					]),
+					(17, vec![
+						Release::new("Aftermath", "No Time to Waste"),
+						Release::new("Babylon A.D.", "Live Lightning (live album)"),
+						Release::new("Chelsea Grin", "Suffer in Heaven"),
+						Release::new("Contrarian", "Sage of Shekhinah"),
+						Release::new("Dark Sanctuary", "Cernunnos"),
+						Release::new("Downfall of Gaia", "Silhouettes of Disgust"),
+						Release::new("Elysion", "Bring Out Your Dead"),
+						Release::new("Gideon", "More Power. More Pain."),
+						Release::new("Invent Animate", "Heavener"),
+						Release::new("John Diva and the Rockets of Love", "The Big Easy"),
+						Release::new("Kamelot", "The Awakening"),
+						Release::new("Mystic Circle", "Erzdämon"),
+						Release::new("Narnia", "Ghost Town"),
+						Release::new("Night Demon", "Outsider"),
+						Release::new("Pop Evil", "Skeletons"),
+						Release::new("Redemption", "I Am the Storm"),
+						Release::new("Seven Spires", "Live at ProgPower USA XXI (live album)"),
+						Release::new("Theory of a Deadman", "Dinosaur"),
+					]),
+					(24, vec![
+						Release::new("Acid King", "Beyond Vision"),
+						Release::new("August Burns Red", "Death Below"),
+						Release::new("Babymetal", "The Other One"),
+						Release::new("Cruachan", "The Living and the Dead"),
+						Release::new("Dawn Ray'd", "To Know the Light"),
+						Release::new("Excalion", "Once Upon a Time"),
+						Release::new("Floor Jansen", "Paragon"),
+						Release::new("Hatesphere", "Hatred Reborn"),
+						Release::new("Ihsahn", "Fascination Street Sessions (EP)"),
+						Release::new("Keep of Kalessin", "Katharsis"),
+						Release::new("Liturgy", "93696"),
+						Release::new("Ne Obliviscaris", "Exul"),
+						Release::new("Project 86", "Omni, Part 1"),
+						Release::new("Saxon", "More Inspirations (covers album)"),
+						Release::new("Subway to Sally", "Himmelfahrt"),
+						Release::new("Xysma", "No Place Like Alone"),
+					]),
+					(29, vec![
+						Release::new("After the Burial", "Embrace the Infinity (EP)"),
+					]),
+					(31, vec![
+						Release::new("Ad Infinitum", "Chapter III – Downfall"),
+						Release::new("Alpha Wolf", "Shh (EP)"),
+						Release::new("Attack Attack!", "Dark Waves (EP)"),
+						Release::new("Bury Tomorrow", "The Seventh Sun"),
+						Release::new("De La Tierra", "III"),
+						Release::new("Last in Line", "Jericho"),
+						Release::new("Lordi", "Screem Writers Guild"),
+						Release::new("The Ongoing Concept", "Again"),
+						Release::new("Rotten Sound", "Apocalypse"),
+						Release::new("Visions of Atlantis", "Pirates Over Wacken (live album)"),
+					]),
+				])),
+				(Month::April, Releases::from([
+					(7, vec![
+						Release::new("Angel Vivaldi", "Away with Words, Pt. 2 (EP)"),
+						Release::new("Cultura Tres", "Camino de Brujos"),
+						Release::new("Kiss", "Off the Soundboard: Poughkeepsie, New York, 1984 (live album)"),
+						Release::new("Paul Gilbert", "The Dio Album (covers album)"),
+						Release::new("Powerwolf", "Interludium"),
+						Release::new("Rise of the Northstar", "Showdown"),
+						Release::new("Tribulation", "Hamartia (EP)"),
+					]),
+					(14, vec![
+						Release::new("Atreyu", "The Hope of a Spark (EP)"),
+						Release::new("Dødheimsgard", "Black Medium Current"),
+						Release::new("Holy Moses", "Invisible Queen"),
+						Release::new("Infected Rain", "The Devil's Dozen (live album)"),
+						Release::new("Jesus Piece", "...So Unknown"),
+						Release::new("L.A. Guns", "Black Diamonds"),
+						Release::new("Magnus Karlsson's Free Fall", "Hunt the Flame"),
+						Release::new("Metallica", "72 Seasons"),
+						Release::new("Mike Tramp", "Songs of White Lion (covers album)"),
+						Release::new("Overkill", "Scorched"),
+					]),
+					(20, vec![
+						Release::new("Portrayal of Guilt", "Devil Music"),
+					]),
+					(21, vec![
+						Release::new("The 69 Eyes", "Death of Darkness"),
+						Release::new("Angus McSix", "Angus McSix and the Sword of Power"),
+						Release::new("Anthem", "Crimson & Jet Black"),
+						Release::new("As Everything Unfolds", "Ultraviolet"),
+						Release::new("Axel Rudi Pell", "The Ballads VI (compilation album)"),
+						Release::new("Bell Witch", "Future's Shadow Part 1: The Clandestine Gate"),
+						Release::new("Dorthia Cottrell", "Death Folk Country"),
+						Release::new("Enter Shikari", "A Kiss for the Whole World"),
+						Release::new("Liv Kristine", "River of Diamonds"),
+						Release::new("Magnus Rosén Band", "It's Time to Rock the World Again"),
+						Release::new("Texas Hippie Coalition", "The Name Lives On"),
+					]),
+					(28, vec![
+						Release::new("Cradle of Filth", "Trouble and Their Double Lives (live album)"),
+						Release::new("Crown the Empire", "Dogma"),
+						Release::new("Disciple", "Skeleton Psalms"),
+						Release::new("Elvenking", "Reader of the Runes – Rapture"),
+						Release::new("Graveworm", "Killing Innocence"),
+						Release::new("Iced Earth", "Hellrider/I Walk Among You (EP)"),
+						Release::new("IGNEA", "Dreams of Lands Unseen"),
+						Release::new("Majesty", "Back to Attack"),
+						Release::new("Necronomicon", "Constant to Death"),
+						Release::new("Runemagick", "Beyond the Cenotaph of Mankind"),
+						Release::new("Smoulder", "Violent Creed of Vengeance"),
+					]),
+				])),
+				(Month::May, Releases::from([
+					(5, vec![
+						Release::new("Blood Ceremony", "The Old Ways Remain"),
+						Release::new("Burning Witches", "The Dark Tower"),
+						Release::new("Currents", "The Death We Seek"),
+						Release::new("Dave Lombardo", "Rites of Percussion"),
+						Release::new("Deathstars", "Everything Destroys You"),
+						Release::new("Enforcer", "Nostalgia"),
+						Release::new("Haunt", "Golden Arm"),
+						Release::new("Krallice", "Porous Resonance Abyss"),
+						Release::new("Lumsk", "Fremmede Toner"),
+						Release::new("Savage Grace", "Sign of the Cross"),
+						Release::new("Scarlet Aura", "Rock in Sange si Vointa"),
+						Release::new("Therapy?", "Hard Cold Fire"),
+						Release::new("Tygers of Pan Tang", "Bloodlines"),
+						Release::new("Unearth", "The Wretched; the Ruinous"),
+						Release::new("Vintersea", "Woven into Ashes"),
+						Release::new("Winger", "Seven"),
+					]),
+					(12, vec![
+						Release::new("The Acacia Strain", "Step into the Light / Failure Will Follow"),
+						Release::new("The Amity Affliction", "Not Without My Ghosts"),
+						Release::new("Cattle Decapitation", "Terrasite"),
+						Release::new("DevilDriver", "Dealing with Demons Vol. II"),
+						Release::new("Heavens Edge", "Get It Right"),
+						Release::new("Veil of Maya", "Mother"),
+					]),
+					(19, vec![
+						Release::new("Alcatrazz", "Take No Prisoners"),
+						Release::new("Arjen Lucassen's Supersonic Revolution", "Golden Age of Music"),
+						Release::new("Botanist", "VIII: Selenotrope"),
+						Release::new("Def Leppard with the Royal Philharmonic Orchestra", "Drastic Symphonies"),
+						Release::new("Ghost", "Phantomime (EP)"),
+						Release::new("Heretoir", "Wastelands (EP)"),
+						Release::new("Mystic Prophecy", "Hellriot"),
+						Release::new("The Ocean", "Holocene"),
+						Release::new("Sleep Token", "Take Me Back to Eden"),
+						Release::new("Sweet & Lynch", "Heart & Sacrifice"),
+						Release::new("Thulcandra", "Hail the Abyss"),
+						Release::new("Yakuza", "Sutra"),
+					]),
+					(26, vec![
+						Release::new("Elegant Weapons", "Horns for a Halo"),
+						Release::new("Godsticks", "This Is What a Winner Looks Like"),
+						Release::new("Immortal", "War Against All"),
+						Release::new("Kalmah", "Kalmah"),
+						Release::new("Legion of the Damned", "The Poison Chalice"),
+						Release::new("Magnus Rosén Band", "Outside the Rock Box (mini-album)"),
+						Release::new("Metal Church", "Congregation of Annihilation"),
+						Release::new("Sirenia", "1977"),
+						Release::new("Tesla", "Full Throttle Live (live album)"),
+						Release::new("Trespass", "Wolf at the Door"),
+						Release::new("Vomitory", "All Heads Are Gonna Roll"),
+					]),
+				])),
+				(Month::June, Releases::from([
+					(2, vec![
+						Release::new("Anubis Gate", "Interference"),
+						Release::new("Avenged Sevenfold", "Life Is But a Dream..."),
+						Release::new("Bongzilla", "Dab City"),
+						Release::new("Buckcherry", "Vol. 10"),
+						Release::new("Gloryhammer", "Return to the Kingdom of Fife"),
+						Release::new("Omnium Gatherum", "Slasher (EP)"),
+						Release::new("Wytch Hazel", "IV"),
+					]),
+					(9, vec![
+						Release::new("Extreme", "Six"),
+						Release::new("Glass Casket", "Glass Casket (EP)"),
+						Release::new("Godflesh", "Purge"),
+						Release::new("Ray Alder", "II"),
+						Release::new("Rise to Fall", "The Fifth Dimension"),
+						Release::new("Scar Symmetry", "The Singularity (Phase II – Xenotaph)"),
+						Release::new("Shakra", "Invincible"),
+						Release::new("Slipknot", "Adderall (EP)"),
+					]),
+					(16, vec![
+						Release::new("Arkona", "Kob'"),
+						Release::new("Church of Misery", "Born Under a Mad Sign"),
+						Release::new("Fifth Angel", "When Angels Kill"),
+						Release::new("Finger Eleven", "Greatest Hits (compilation album)"),
+						Release::new("Joel Hoekstra's 13", "Crash of Life"),
+						Release::new("King Gizzard & the Lizard Wizard", "PetroDragonic Apocalypse; or, Dawn of Eternal Night: An Annihilation of Planet Earth and the Beginning of Merciless Damnation"),
+						Release::new("Queens of the Stone Age", "In Times New Roman..."),
+						Release::new("Saturnus", "The Storm Within"),
+						Release::new("Thy Catafalque", "Alföld"),
+					]),
+					(23, vec![
+						Release::new("Jag Panzer", "The Hallowed"),
+						Release::new("Nocturnal Breed", "Carry the Beast"),
+						Release::new("Pyramaze", "Bloodlines"),
+						Release::new("Tsjuder", "Helvegr"),
+						Release::new("Xasthur", "Inevitably Dark"),
+					]),
+					(30, vec![
+						Release::new("Before the Dawn", "Stormbringers"),
+						Release::new("Death Ray Vision", "No Mercy from Electric Eyes"),
+						Release::new("Divide and Dissolve", "Systemic"),
+						Release::new("Raven", "All Hell's Breaking Loose"),
+						Release::new("Slaughter to Prevail", "Live in Moscow (live album)"),
+						Release::new("Virgin Steele", "The Passion of Dionysus"),
+					]),
+				])),
+				(Month::July, Releases::from([
+					(7, vec![
+						Release::new("1476", "In Exile"),
+						Release::new("Bangalore Choir", "Center Mass"),
+						Release::new("Better Lovers", "God Made Me an Animal (EP)"),
+						Release::new("Blackbraid", "Blackbraid II"),
+						Release::new("Blaze Bayley", "Damaged Strange Different and Live (live album)"),
+						Release::new("Bloodbound", "Tales from the North"),
+						Release::new("Butcher Babies", "Eye for an Eye... / ...'Til the World's Blind"),
+						Release::new("Fen", "Monuments to Absence"),
+						Release::new("Nita Strauss", "The Call of the Void"),
+						Release::new("The Raven Age", "Blood Omen"),
+						Release::new("Will Haven", "VII"),
+					]),
+					(14, vec![
+						Release::new("Edge of Paradise", "Hologram"),
+						Release::new("Eleine", "We Shall Remain"),
+						Release::new("Evile", "The Unknown"),
+						Release::new("Fallstar", "Sacred Mirrors"),
+						Release::new("Freedom Call", "The M.E.T.A.L. Fest (live album)"),
+						Release::new("Kim Dracula", "A Gradual Decline in Morale"),
+						Release::new("Vendetta", "Black as Coal"),
+						Release::new("Voyager", "Fearless in Love"),
+					]),
+					(21, vec![
+						Release::new("Akercocke", "Decades of Devil Worship (live album)"),
+						Release::new("Cadaver", "The Age of the Offended"),
+						Release::new("Soil", "Restoration (compilation album)"),
+						Release::new("Voivod", "Morgöth Tales"),
+						Release::new("The Zenith Passage", "Datalysium"),
+					]),
+					(28, vec![
+						Release::new("Contrarian", "Demos & Oddities: 1995–1999 (compilation album)"),
+						Release::new("From Ashes to New", "Blackout"),
+						Release::new("Girlschool", "WTFortyfive?"),
+						Release::new("Mutoid Man", "Mutants"),
+						Release::new("Panzerchrist", "Last of a Kind"),
+						Release::new("Sevendust", "Truth Killer"),
+						Release::new("Signs of the Swarm", "Amongst the Low & Empty"),
+						Release::new("Uncle Acid & the Deadbeats", "Slaughter on First Avenue (live album)"),
+					]),
+				])),
+				(Month::August, Releases::from([
+					(4, vec![
+						Release::new("Crypta", "Shades of Sorrow"),
+						Release::new("Skindred", "Smile"),
+					]),
+					(11, vec![
+						Release::new("George Lynch & Jeff Pilson", "Heavy Hitters II (covers album)"),
+						Release::new("Kataklysm", "Goliath"),
+						Release::new("King Kobra", "We Are Warriors"),
+						Release::new("Megaherz", "In Teufels Namen"),
+						Release::new("Tarja", "Rocking Heels: Live at Metal Church (live album)"),
+					]),
+					(18, vec![
+						Release::new("Atreyu", "The Moment You Find Your Flame (EP)"),
+						Release::new("Cyhra", "The Vertigo Trigger"),
+						Release::new("Horrendous", "Ontological Mysterium"),
+						Release::new("Nocte Obducta", "Karwoche (Die Sonne Der Toten Pulsiert)"),
+						Release::new("Orbit Culture", "Descent"),
+						Release::new("Ringworm", "Seeing Through Fire"),
+						Release::new("Skálmöld", "Ýdalir"),
+						Release::new("Slipknot", "Live at MSG (live album)"),
+						Release::new("Spirit Adrift", "Ghost at the Gallows"),
+						Release::new("Warmen", "Here for None"),
+					]),
+					(22, vec![
+						Release::new("Dethklok", "Dethalbum IV"),
+					]),
+					(25, vec![
+						Release::new("Alice Cooper", "Road"),
+						Release::new("The Armed", "Perfect Saviors"),
+						Release::new("Asking Alexandria", "Where Do We Go from Here?"),
+						Release::new("Blut Aus Nord", "Disharmonium – Nahab"),
+						Release::new("Dethklok", "Metalocalypse: Army of the Doomstar (soundtrack album)"),
+						Release::new("Endstille", "Detonation"),
+						Release::new("Exmortus", "Necrophony"),
+						Release::new("Filter", "The Algorithm"),
+						Release::new("Hurricane", "Reconnected"),
+						Release::new("Incantation", "Unholy Deification"),
+						Release::new("Lions at the Gate", "The Excuses We Cannot Make"),
+						Release::new("U.D.O.", "Touchdown"),
+						Release::new("The Word Alive", "Hard Reset"),
+					]),
+					(28, vec![
+						Release::new("Exhumed", "Beyond the Dead (EP)"),
+					]),
+				])),
+				(Month::September, Releases::from([
+					(1, vec![
+						Release::new("Escape the Fate", "Out of the Shadows"),
+						Release::new("Marduk", "Memento Mori"),
+						Release::new("Phil Campbell and the Bastard Sons", "Kings of the Asylum"),
+						Release::new("Polaris", "Fatalism"),
+						Release::new("Primal Fear", "Code Red"),
+						Release::new("Soen", "Memorial"),
+						Release::new("Stitched Up Heart", "To the Wolves"),
+						Release::new("Taake", "Et Hav Av Avstand"),
+					]),
+					(8, vec![
+						Release::new("Bio-Cancer", "Revengeance"),
+						Release::new("Conquer Divide", "Slow Burn"),
+						Release::new("Cryptopsy", "As Gomorrah Burns"),
+						Release::new("Dying Fetus", "Make Them Beg for Death"),
+						Release::new("Finsterforst", "Jenseits (EP)"),
+						Release::new("George Lynch", "Guitars at the End of the World"),
+						Release::new("Kvelertak", "Endling"),
+						Release::new("Oomph!", "Richter und Henker"),
+						Release::new("Puddle of Mudd", "Ubiquitous"),
+						Release::new("Saliva", "Revelation"),
+						Release::new("Sylosis", "A Sign of Things to Come"),
+					]),
+					(15, vec![
+						Release::new("Baroness", "Stone"),
+						Release::new("Brujeria", "Esto Es Brujeria"),
+						Release::new("Corey Taylor", "CMF2"),
+						Release::new("Electric Boys", "Grand Explosivos"),
+						Release::new("Gridlink", "Coronet Juniper"),
+						Release::new("Mayhem", "Daemonic Rites (live album)"),
+						Release::new("Molybaron", "Something Ominous"),
+						Release::new("Night Verses", "Every Sound Has a Color in the Valley of Night: Part 1"),
+						Release::new("Otep", "The God Slayer"),
+						Release::new("Ronnie Romero", "Too Many Lies, Too Many Masters"),
+						Release::new("Shade Empire", "Sunholy"),
+						Release::new("Shining", "Shining"),
+						Release::new("Tesseract", "War of Being"),
+						Release::new("War of Ages", "Dominion"),
+					]),
+					(20, vec![
+						Release::new("Kill Devil Hill", "Seas of Oblivion"),
+					]),
+					(22, vec![
+						Release::new("3Teeth", "EndEx"),
+						Release::new("Annisokay", "Abyss Pt I (EP)"),
+						Release::new("Cannibal Corpse", "Chaos Horrific"),
+						Release::new("Dayshell", "Pegasus"),
+						Release::new("KEN mode", "Void"),
+						Release::new("Mercenary", "Soundtrack to the End of Times"),
+						Release::new("Profanatica", "Crux Simplex"),
+						Release::new("Rebaelliun", "Under the Sign of Rebellion"),
+						Release::new("Staind", "Confessions of the Fallen"),
+						Release::new("Thy Art Is Murder", "Godlike"),
+						Release::new("Wolves at the Gate", "Lost in Translation (covers album)"),
+					]),
+					(29, vec![
+						Release::new("Black Stone Cherry", "Screamin' at the Sky"),
+						Release::new("Blackbriar", "A Dark Euphony"),
+						Release::new("Code Orange", "The Above"),
+						Release::new("Dark the Suns", "Raven and the Nightsky"),
+						Release::new("Harm's Way", "Common Suffering"),
+						Release::new("KK's Priest", "The Sinner Rides Again"),
+						Release::new("Nervosa", "Jailbreak"),
+						Release::new("Nikki Stringfield", "Apocrypha"),
+						Release::new("Primordial", "How It Ends"),
+						Release::new("Red", "Rated R"),
+						Release::new("Taproot", "SC\\SSRS"),
+						Release::new("Wolves in the Throne Room", "Crypt of Ancestral Knowledge (EP)"),
+					]),
+				])),
+				(Month::October, Releases::from([
+					(6, vec![
+						Release::new("Carnifex", "Necromanteum"),
+						Release::new("Heavy Load", "Riders of the Ancient Storm"),
+						Release::new("Heretoir", "Nightsphere"),
+						Release::new("Iron Savior", "Firestar"),
+						Release::new("October Tide", "The Cancer Pledge"),
+						Release::new("Of Mice & Men", "Tether"),
+						Release::new("Prong", "State of Emergency"),
+						Release::new("Svalbard", "The Weight of the Mask"),
+					]),
+					(13, vec![
+						Release::new("Amorphis", "Queen of Time (Live at Tavastia 2021) (live album)"),
+						Release::new("Beartooth", "The Surface"),
+						Release::new("Krieg", "Ruiner"),
+						Release::new("Laster", "Andermans Mijne"),
+						Release::new("On Thorns I Lay", "On Thorns I Lay"),
+						Release::new("Oni", "The Silver Line"),
+						Release::new("Ronnie Atkins", "Trinity"),
+						Release::new("Sulphur Aeon", "Seven Crowns and Seven Seals"),
+						Release::new("Sven Gali", "Bombs and Battlescars"),
+						Release::new("Theocracy", "Mosaic"),
+						Release::new("Varg", "Ewige Wacht"),
+					]),
+					(20, vec![
+						Release::new("The Amenta", "Plague of Locus (EP)"),
+						Release::new("Angelus Apatrida", "Aftermath"),
+						Release::new("The Callous Daoboys", "God Smiles Upon the Callous Daoboys (EP)"),
+						Release::new("Cirith Ungol", "Dark Parade"),
+						Release::new("Dog Eat Dog", "Free Radicals"),
+						Release::new("Lynch Mob", "Babylon"),
+						Release::new("Myrkur", "Spine"),
+						Release::new("Night Ranger", "40 Years and a Night with the Contemporary Youth Orchestra (live album)"),
+						Release::new("Temperance", "Hermitage – Daruma's Eyes Pt. 2"),
+						Release::new("Within Temptation", "Bleed Out"),
+					]),
+					(27, vec![
+						Release::new("Autopsy", "Ashes, Organs, Blood and Crypts"),
+						Release::new("Dokken", "Heaven Comes Down"),
+						Release::new("Doro", "Conqueress Forever Strong and Proud"),
+						Release::new("End", "The Sin of Human Frailty"),
+						Release::new("Icarus Witch", "No Devil Lived On"),
+						Release::new("In This Moment", "Godmode"),
+						Release::new("King Gizzard & the Lizard Wizard", "The Silver Cord"),
+						Release::new("Mark Tremonti", "Christmas Classics New & Old (covers album)"),
+						Release::new("Obscura", "A Celebration I – Live in North America (live album)"),
+						Release::new("Of Virtue", "Omen"),
+						Release::new("Pigs Pigs Pigs Pigs Pigs Pigs Pigs", "Live in New York (live album)"),
+						Release::new("Poppy", "Zig"),
+						Release::new("Sorcerer", "Reign of the Reaper"),
+					]),
+				])),
+				(Month::November, Releases::from([
+					(3, vec![
+						Release::new("Angra", "Cycles of Pain"),
+						Release::new("Atreyu", "A Torch in the Dark (EP)"),
+						Release::new("Bad Wolves", "Die About It"),
+						Release::new("Dying Wish", "Symptoms of Survival"),
+						Release::new("Green Lung", "This Heathen Land"),
+						Release::new("Insomnium", "Songs of the Dusk (EP)"),
+						Release::new("Kontrust", "Madworld"),
+						Release::new("Mortuary Drape", "Black Mirror"),
+						Release::new("Serenity", "Nemesis AD"),
+						Release::new("Silent Planet", "Superbloom"),
+						Release::new("Spiritbox", "The Fear of Fear (EP)"),
+						Release::new("Suffocation", "Hymns from the Apocrypha"),
+						Release::new("Watain", "Die in Fire – Live in Hell (Agony and Ecstasy Over Stockholm) (live album)"),
+					]),
+					(8, vec![
+						Release::new("Nemophila", "The Initial Impulse (EP)"),
+					]),
+					(10, vec![
+						Release::new("Diviner", "Avaton"),
+						Release::new("Gama Bomb", "Bats"),
+						Release::new("Helmet", "Left"),
+						Release::new("Hinayana", "Shatter and Fall"),
+						Release::new("Secret Sphere", "Blackened Heartbeat"),
+						Release::new("Sodom", "1982 (EP)"),
+						Release::new("Tarja", "Dark Christmas (cover album)"),
+						Release::new("Vastum", "Inward to Gethsemane"),
+					]),
+					(11, vec![
+						Release::new("Mike Mangini", "Invisible Signs"),
+					]),
+					(17, vec![
+						Release::new("Aeternus", "Philosopher"),
+						Release::new("Celeste", "Epilogue(s) (EP)"),
+						Release::new("Corroded", "Plague"),
+						Release::new("DGM", "Life"),
+						Release::new("Eldritch", "Innervoid"),
+						Release::new("Lacey Sturm", "Kenotic Metanoia"),
+						Release::new("Nonpoint", "Heartless (EP)"),
+						Release::new("Racetraitor", "Creation and the Timeless Order of Things"),
+						Release::new("Sadus", "The Shadow Inside"),
+						Release::new("Texas in July", "Without Reason (EP)"),
+					]),
+					(20, vec![
+						Release::new("Impending Doom", "Last Days (EP)"),
+					]),
+					(24, vec![
+						Release::new("Bernie Marsden", "Working Man"),
+						Release::new("Cruciamentum", "Obsidian Refractions"),
+					]),
+				])),
+				(Month::December, Releases::from([
+					(1, vec![
+						Release::new("Demoncy", "Black Star Gnosis"),
+						Release::new("Extortionist", "Devoid (EP)"),
+						Release::new("Ghost", "13 Commandments (compilation album)"),
+						Release::new("Omega Diatribe", "Deviant"),
+						Release::new("Paradise Lost", "Icon 30"),
+						Release::new("Visions of Atlantis", "A Pirate's Symphony"),
+					]),
+					(4, vec![
+						Release::new("Xibalba", "Aztlán (EP)"),
+					]),
+					(8, vec![
+						Release::new("Atreyu", "The Beautiful Dark of Life"),
+						Release::new("Dimmu Borgir", "Inspiratio Profanus (covers album)"),
+						Release::new("Ektomorf", "Vivid Black"),
+						Release::new("Judicator", "I Am the Void (EP)"),
+						Release::new("Polkadot Cadaver", "Echoes Across the Hellscape"),
+						Release::new("Porcupine Tree", "Closure/Continuation.Live (live album)"),
+						Release::new("Trick or Treat", "A Creepy Night Live (live album)"),
+					]),
+					(15, vec![
+						Release::new("Children of Bodom", "A Chapter Called Children of Bodom (The Final Show in Helsinki Ice Hall 2019) (live album)"),
+						Release::new("Evergrey", "From Dark Discoveries to Heartless Portraits (compilation album)"),
+						Release::new("Hed PE", "Detox"),
+						Release::new("Rob Arnold", "Menace"),
+						Release::new("Therion", "Leviathan III"),
+						Release::new("Troll", "Trolldom"),
+					]),
+					(26, vec![
+						Release::new("Die Apokalyptischen Reiter", "Die Mutter des Teufels (EP)")
+					]),
+					(29, vec![
+						Release::new("Lord of the Lost", "Weapons of Mass Seduction (covers album)"),
+					]),
+				])),
+			]),
 		};
-		pretty_assertions::assert_eq!(got, want);
+        _compare_calendars(got, want);
+        //pretty_assertions::assert_eq!(got, want);
         Ok(())
     }
 
@@ -827,17 +1485,26 @@ mod tests {
         Ok(())
     }
 
-	fn _compare_calendars(got: Calendar, want: Calendar) {
-		for (month, releases) in want.data.iter() {
-			match got.data.get(month) {
-				Some(got_releases) => {
-					for (day, want_day) in releases.iter() {
-						let got_day = got_releases.get(day).unwrap();
-						pretty_assertions::assert_eq!(got_day, want_day);
-					}
-				},
-				None => panic!("should have had month `{:?}`", month),
-			}
-		}
-	}
+    fn _compare_calendars(got: Calendar, want: Calendar) {
+        for (month, releases) in want.data.iter() {
+            match got.data.get(month) {
+                Some(got_releases) => {
+                    for (day, want_day) in releases.iter() {
+                        let got_day = match got_releases.get(day) {
+                            Some(day) => day,
+                            None => panic!("Missing day {:?} {day}", month),
+                        };
+                        pretty_assertions::assert_eq!(
+                            got_day,
+                            want_day,
+                            "month: {:?} - day: {}",
+                            month,
+                            day
+                        );
+                    }
+                }
+                None => panic!("should have had month `{:?}`", month),
+            }
+        }
+    }
 }

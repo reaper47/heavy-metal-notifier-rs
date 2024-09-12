@@ -41,9 +41,9 @@ impl Release {
         if album.contains("[") {
             album = album.split_once('[').unwrap().0.to_string();
         }
-       
+
         Self {
-            artist: artist.into(), 
+            artist: artist.into(),
             album,
             links: Vec::new(),
         }
@@ -81,7 +81,7 @@ impl Calendar {
         }
     }
 
-    pub fn add_release(&mut self, month: Month, day: Day, release: Release) {        
+    pub fn add_release(&mut self, month: Month, day: Day, release: Release) {
         self.data
             .entry(month)
             .or_insert_with(Releases::new)
@@ -133,7 +133,8 @@ mod tests {
         got.add_release(Month::August, 31, release.clone());
 
         let mut want = Calendar::new();
-        want.data.insert(Month::August, HashMap::from([(31, vec![release])]));
+        want.data
+            .insert(Month::August, HashMap::from([(31, vec![release])]));
         pretty_assertions::assert_eq!(got, want);
         Ok(())
     }
@@ -142,15 +143,14 @@ mod tests {
     fn test_calendar_get_releases_ok() -> Result<()> {
         let release = Release::new("Wintersun", "Time II");
         let calendar = Calendar {
-            data: CalendarData::from([
-                (Month::August, Releases::from([
-                    (31, vec![release.clone()])
-                ]))
-            ])
+            data: CalendarData::from([(
+                Month::August,
+                Releases::from([(31, vec![release.clone()])]),
+            )]),
         };
 
         let got = calendar.get_releases(Month::August, 31);
-        
+
         pretty_assertions::assert_eq!(got, Some(&vec![release]));
         Ok(())
     }
