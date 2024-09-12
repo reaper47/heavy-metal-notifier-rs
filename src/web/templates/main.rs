@@ -3,278 +3,298 @@ use maud::{html, Markup, PreEscaped};
 use super::{core::layout, Page};
 
 pub fn index() -> Markup {
-    layout("Home", true, Page::Home, html!(
-        section class="col-span-12 py-20" style="background: linear-gradient(90deg, #D73737 0%, #3D3D3D 100%)" {
-			div class="container mx-auto px-6" {
-				h2 class="text-4xl font-bold mb-2 text-white" {
-					"Are you tired of missing out on your favorite heavy metal bands' latest album releases due to life's busyness?"
-                }
-				h3 class="text-2xl mb-8 text-gray-200" {
-					"Never miss a headbang-worthy album again. Stay in tune with our band release notifier!"
-                }
-				a href="/start" class="bg-white font-bold rounded-full py-4 px-8 shadow-lg uppercase tracking-wider" {
-					"Start Now"
-                }
-            }
-        }
-		section class="col-span-12 container mx-auto px-6 p-10" {
-			h2 class="text-4xl font-bold text-center text-gray-800 mb-8" {
-				"How it works"
-            }
-			div class="flex items-center flex-wrap mb-20" {
-				div class="w-full md:w-1/2" {
-					h4 class="text-3xl text-gray-800 font-bold mb-3" {
-						"Sign up"
+    layout(
+        "Home",
+        true,
+        Page::Home,
+        html!(
+            section class="col-span-12 py-20" style="background: linear-gradient(90deg, #D73737 0%, #3D3D3D 100%)" {
+                div class="container mx-auto px-6" {
+                    h2 class="text-4xl font-bold mb-2 text-white" {
+                        "Are you tired of missing out on your favorite heavy metal bands' latest album releases due to life's busyness?"
                     }
-					p class="text-gray-600 mb-8" {
-						"The only information we need from you is your email address."
+                    h3 class="text-2xl mb-8 text-gray-200" {
+                        "Never miss a headbang-worthy album again. Stay in tune with our band release notifier!"
                     }
-                }
-				div class="w-full md:w-1/2" {
-					img src="/static/img/day-of-tentacle.png" alt="Monitoring";
-                }
-            }
-			div class="flex items-center flex-wrap mb-20" {
-				div class="w-full md:w-1/2" {
-					img src="/static/img/guitarist.jpg" alt="Reporting";
-                }
-				div class="w-full md:w-1/2 pl-10" {
-					h4 class="text-3xl text-gray-800 font-bold mb-3" {
-						"Continue hustling"
-                    }
-					p class="text-gray-600 mb-8" {
-						"Missing metal album releases is now a thing of the past because our service notifies you by email you whenever a band releases an album."
+                    a href="/start" class="bg-white font-bold rounded-full py-4 px-8 shadow-lg uppercase tracking-wider" {
+                        "Start Now"
                     }
                 }
             }
-        }
-		section class="col-span-12 bg-gray-100" {
-			div class="container mx-auto px-6 py-20" {
-				h2 class="text-4xl font-bold text-center text-gray-800 mb-8" {
-					"Important Tips"
+            section class="col-span-12 container mx-auto px-6 p-10" {
+                h2 class="text-4xl font-bold text-center text-gray-800 mb-8" {
+                    "How it works"
                 }
-				div class="flex flex-wrap" {
-					div class="w-full md:w-1/3 px-2 mb-4" {
-						div class="bg-white rounded shadow py-2" {
-							p class="text-gray-800 text-base px-6 mb-5" {
-								"We pull our information straight from Wikipedia's authoritative"
-								(PreEscaped("<a href=\"https://en.wikipedia.org/wiki/2024_in_heavy_metal_music\" target=\"_blank\" class=\"text-red-500 hover:text-red-700\"> metal album release page</a>"))
-                                ", so you can be sure you're getting accurate and up-to-date info. Never miss out on a killer album drop again!"
-                            }
+                div class="flex items-center flex-wrap mb-20" {
+                    div class="w-full md:w-1/2" {
+                        h4 class="text-3xl text-gray-800 font-bold mb-3" {
+                            "Sign up"
+                        }
+                        p class="text-gray-600 mb-8" {
+                            "The only information we need from you is your email address."
                         }
                     }
-					div class="w-full md:w-1/3 px-2 mb-4" {
-						div class="bg-white rounded shadow py-2" {
-							p class="text-gray-800 text-base px-6 mb-5" {
-								"Just like how metal bands rely on brutal riffs and bone-crushing drum beats to create "
-								"their music, they also rely on the support of their fans to keep the metal scene alive. "
-								"Don't be afraid to throw down some cash and show off your metal pride. Your support could "
-								"be the one that fuels their next epic album or tour. Horns up, metalheads! \\m/"
-                            }
-                        }
+                    div class="w-full md:w-1/2" {
+                        img src="/static/img/day-of-tentacle.png" alt="Monitoring";
                     }
-					div class="w-full md:w-1/3 px-2 mb-4" {
-						div class="bg-white rounded shadow py-2" {
-							p class="text-gray-800 text-base px-6 mb-5" {
-								"Sometimes email alerts can get caught in spam filters, so it's important to check your "
-								"spam folder regularly to make sure that you're not missing any important notifications."
-                            }
+                }
+                div class="flex items-center flex-wrap mb-20" {
+                    div class="w-full md:w-1/2" {
+                        img src="/static/img/guitarist.jpg" alt="Reporting";
+                    }
+                    div class="w-full md:w-1/2 pl-10" {
+                        h4 class="text-3xl text-gray-800 font-bold mb-3" {
+                            "Continue hustling"
+                        }
+                        p class="text-gray-600 mb-8" {
+                            "Missing metal album releases is now a thing of the past because our service notifies you by email you whenever a band releases an album."
                         }
                     }
                 }
             }
-        }
-	    section class="col-span-12" style="background: linear-gradient(90deg, #3D3D3D 0%, #D73737 100%)" {
-			div class="container mx-auto px-6 text-center py-20" {
-				h2 class="mb-6 text-4xl font-bold text-center text-white" {
-					"Never Miss a Beat"
-                }
-				h3 class="mt-4 mb-6 text-2xl text-white" {
-					"Keep track of the latest heavy metal album releases with our notifier, and never lose your headbanging rhythm again!"            
-                }
-				a href="/start" class="bg-white font-bold rounded-full mt-6 py-4 px-8 shadow-lg uppercase tracking-wider" {
-					"Start Now"
+            section class="col-span-12 bg-gray-100" {
+                div class="container mx-auto px-6 py-20" {
+                    h2 class="text-4xl font-bold text-center text-gray-800 mb-8" {
+                        "Important Tips"
+                    }
+                    div class="flex flex-wrap" {
+                        div class="w-full md:w-1/3 px-2 mb-4" {
+                            div class="bg-white rounded shadow py-2" {
+                                p class="text-gray-800 text-base px-6 mb-5" {
+                                    "We pull our information straight from Wikipedia's authoritative"
+                                    (PreEscaped("<a href=\"https://en.wikipedia.org/wiki/2024_in_heavy_metal_music\" target=\"_blank\" class=\"text-red-500 hover:text-red-700\"> metal album release page</a>"))
+                                    ", so you can be sure you're getting accurate and up-to-date info. Never miss out on a killer album drop again!"
+                                }
+                            }
+                        }
+                        div class="w-full md:w-1/3 px-2 mb-4" {
+                            div class="bg-white rounded shadow py-2" {
+                                p class="text-gray-800 text-base px-6 mb-5" {
+                                    "Just like how metal bands rely on brutal riffs and bone-crushing drum beats to create "
+                                    "their music, they also rely on the support of their fans to keep the metal scene alive. "
+                                    "Don't be afraid to throw down some cash and show off your metal pride. Your support could "
+                                    "be the one that fuels their next epic album or tour. Horns up, metalheads! \\m/"
+                                }
+                            }
+                        }
+                        div class="w-full md:w-1/3 px-2 mb-4" {
+                            div class="bg-white rounded shadow py-2" {
+                                p class="text-gray-800 text-base px-6 mb-5" {
+                                    "Sometimes email alerts can get caught in spam filters, so it's important to check your "
+                                    "spam folder regularly to make sure that you're not missing any important notifications."
+                                }
+                            }
+                        }
+                    }
                 }
             }
-        }
-    ))
+            section class="col-span-12" style="background: linear-gradient(90deg, #3D3D3D 0%, #D73737 100%)" {
+                div class="container mx-auto px-6 text-center py-20" {
+                    h2 class="mb-6 text-4xl font-bold text-center text-white" {
+                        "Never Miss a Beat"
+                    }
+                    h3 class="mt-4 mb-6 text-2xl text-white" {
+                        "Keep track of the latest heavy metal album releases with our notifier, and never lose your headbanging rhythm again!"
+                    }
+                    a href="/start" class="bg-white font-bold rounded-full mt-6 py-4 px-8 shadow-lg uppercase tracking-wider" {
+                        "Start Now"
+                    }
+                }
+            }
+        ),
+    )
 }
 
 pub fn about() -> Markup {
-    layout("About", true, Page::About, html!(
-        section class="col-span-12 py-20" style="background: linear-gradient(90deg, #D73737 0%, #3D3D3D 100%)" {}
-		section class="col-span-12 container mx-auto px-6 p-10" {
-			div class="flex items-center flex-wrap mb-20" {
-				div class="w-full md:w-1/2" {
-					h4 class="text-3xl text-gray-800 font-bold mb-3" {
-						"About us"
+    layout(
+        "About",
+        true,
+        Page::About,
+        html!(
+            section class="col-span-12 py-20" style="background: linear-gradient(90deg, #D73737 0%, #3D3D3D 100%)" {}
+            section class="col-span-12 container mx-auto px-6 p-10" {
+                div class="flex items-center flex-wrap mb-20" {
+                    div class="w-full md:w-1/2" {
+                        h4 class="text-3xl text-gray-800 font-bold mb-3" {
+                            "About us"
+                        }
+                        p class="text-gray-600 mb-8" {
+                            "At Heavy Metal Releases Notifier, we know that heavy metal fans are always on the hunt for the latest "
+                            "and greatest albums of the day, month and year. That's why we created a service that notifies you "
+                            "when new heavy metal band albums are released."
+                        }
+                        p class="text-gray-600 mb-8" {
+                            "Our service is fully open source and available on "
+                            (PreEscaped("<a href=\"https://github.com/reaper47/heavy-metal-notifier\" target=\"_blank\" class=\"text-blue-500 hover:text-blue-800\">GitHub</a>"))
+                            ". We believe in the power of community and collaboration, and we invite you to join us in improving and expanding our "
+                            "service to make it even better for heavy metal fans everywhere."
+                        }
                     }
-					p class="text-gray-600 mb-8" {
-						"At Heavy Metal Releases Notifier, we know that heavy metal fans are always on the hunt for the latest "
-						"and greatest albums of the day, month and year. That's why we created a service that notifies you "
-						"when new heavy metal band albums are released."
+                    div class="w-full md:w-1/2 flex justify-center" {
+                        img src="/static/img/bell-pepper.jpg" alt="A rocking, red bell pepper";
                     }
-					p class="text-gray-600 mb-8" {
-						"Our service is fully open source and available on "
-                        (PreEscaped("<a href=\"https://github.com/reaper47/heavy-metal-notifier\" target=\"_blank\" class=\"text-blue-500 hover:text-blue-800\">GitHub</a>"))
-						". We believe in the power of community and collaboration, and we invite you to join us in improving and expanding our "
-						"service to make it even better for heavy metal fans everywhere."
-                    }
-                }
-				div class="w-full md:w-1/2 flex justify-center" {
-					img src="/static/img/bell-pepper.jpg" alt="A rocking, red bell pepper";
                 }
             }
-        }
-    ))
+        ),
+    )
 }
 
 pub fn contact(is_message_sent: bool) -> Markup {
-    layout("Contact us", true, Page::Contact, html!(
-        section class="col-span-12 py-20" style="background: linear-gradient(90deg, #D73737 0%, #3D3D3D 100%)" {}
-	    section class="col-span-12 container mx-auto px-6 p-10" {
-			div class="flex items-center flex-wrap mb-20" {
-				div class="w-full md:w-1/2" {
-					h4 class="text-3xl text-gray-800 font-bold mb-3" {
-						"Contact us"
-                    }
-					p class="text-gray-600 mb-4" {
-						"To address any inquiries, please send a message to us directly from the form below."
-                    }
-					form class="w-full md:w-3/4 bg-white p-6 rounded-lg shadow-md mb-8" method="post" action="/contact" {
-						div class="mb-4" {
-							label class="block font-bold mb-2" for="email" {
-                                "Email"
+    layout(
+        "Contact us",
+        true,
+        Page::Contact,
+        html!(
+            section class="col-span-12 py-20" style="background: linear-gradient(90deg, #D73737 0%, #3D3D3D 100%)" {}
+            section class="col-span-12 container mx-auto px-6 p-10" {
+                div class="flex items-center flex-wrap mb-20" {
+                    div class="w-full md:w-1/2" {
+                        h4 class="text-3xl text-gray-800 font-bold mb-3" {
+                            "Contact us"
+                        }
+                        p class="text-gray-600 mb-4" {
+                            "To address any inquiries, please send a message to us directly from the form below."
+                        }
+                        form class="w-full md:w-3/4 bg-white p-6 rounded-lg shadow-md mb-8" method="post" action="/contact" {
+                            div class="mb-4" {
+                                label class="block font-bold mb-2" for="email" {
+                                    "Email"
+                                }
+                                input
+                                    class="border border-gray-400 p-2 w-full"
+                                    type="email"
+                                    id="email"
+                                    name="email"
+                                    placeholder="your@email.com"
+                                    required;
                             }
-							input
-								class="border border-gray-400 p-2 w-full"
-								type="email"
-								id="email"
-								name="email"
-								placeholder="your@email.com"
-								required;							
-                        }
-						div class="mb-4" {
-							label class="block font-bold mb-2" for="message" { "Message" }
-							textarea
-								class="border border-gray-400 p-2 w-full h-32"
-								id="message"
-								name="message"
-								placeholder="Hello Metal Releases, I have something to say."
-								required {}
-                        }
-						div class="text-right" {
-							button
-								class="w-full bg-indigo-500 text-white py-2 px-4 rounded-full hover:bg-indigo-600"
-								type="submit"
-							{
-								"Submit"
+                            div class="mb-4" {
+                                label class="block font-bold mb-2" for="message" { "Message" }
+                                textarea
+                                    class="border border-gray-400 p-2 w-full h-32"
+                                    id="message"
+                                    name="message"
+                                    placeholder="Hello Metal Releases, I have something to say."
+                                    required {}
+                            }
+                            div class="text-right" {
+                                button
+                                    class="w-full bg-indigo-500 text-white py-2 px-4 rounded-full hover:bg-indigo-600"
+                                    type="submit"
+                                {
+                                    "Submit"
+                                }
                             }
                         }
+                    }
+                    div class="w-full md:w-1/2 flex justify-center" {
+                        img src="/static/img/dicoo.png" alt="Monitoring";
                     }
                 }
-				div class="w-full md:w-1/2 flex justify-center" {
-					img src="/static/img/dicoo.png" alt="Monitoring";
+            }
+            @if is_message_sent {
+                script defer {
+                    (PreEscaped("alert(\"Message sent. We will get back to you soon.\")"))
                 }
             }
-        }
-        @if is_message_sent {
-            script defer {
-                (PreEscaped("alert(\"Message sent. We will get back to you soon.\")"))
-            }
-        }
-    ))
+        ),
+    )
 }
 
 pub fn privacy() -> Markup {
-    layout("Privacy Policy", true, Page::Other, html!(
-        section class="col-span-12 py-20" style="background: linear-gradient(90deg, #D73737 0%, #3D3D3D 100%)" {}
-		section class="col-span-12 container mx-auto px-6 p-10" {
-			div class="flex items-center flex-wrap mb-20" {
-				div class="w-full md:w-1/2" {
-					h4 class="text-3xl text-gray-800 font-bold mb-3" {
-						"Privacy Policy"
+    layout(
+        "Privacy Policy",
+        true,
+        Page::Other,
+        html!(
+            section class="col-span-12 py-20" style="background: linear-gradient(90deg, #D73737 0%, #3D3D3D 100%)" {}
+            section class="col-span-12 container mx-auto px-6 p-10" {
+                div class="flex items-center flex-wrap mb-20" {
+                    div class="w-full md:w-1/2" {
+                        h4 class="text-3xl text-gray-800 font-bold mb-3" {
+                            "Privacy Policy"
+                        }
+                        p class="text-gray-600 mb-8" {
+                            "At Heavy Metal Releases Notifier, your privacy is important to us. Our service is designed to "
+                            "provide a secure and efficient experience for our users, and we take the protection of your personal "
+                            "information seriously."
+                        }
+                        h5 class="text-3xl text-gray-800 font-bold mb-3" {
+                            "Information Collection and Use"
+                        }
+                        p class="text-gray-600 mb-8" {
+                            "We only collect the email address of the user who registers for our service. We do not collect "
+                            "any other personal information and do not use any data analytics services. The personal data is "
+                            "only processed on our servers and is not transferred outside the EU."
+                        }
+                        h5 class="text-3xl text-gray-800 font-bold mb-3" {
+                            "Data Retention"
+                        }
+                        p class="text-gray-600 mb-8" {
+                            "Your data is deleted from the live database when you stop using our service. You can do so by clicking "
+                            "the unsubscribe button at the bottom of one of our emails. Until then, your data is kept indefinitely."
+                        }
+                        h5 class="text-3xl text-gray-800 font-bold mb-3" {
+                            "Cookies"
+                        }
+                        p class="text-gray-600 mb-8" {
+                            "We want to assure our users that we do not use any type of cookies on our website, including "
+                            "third-party cookies. This means that we do not collect or store any information about our users' "
+                            "browsing habits or use of the website. We are cookie-free and do not engage in any tracking "
+                            "or advertising activities that may compromise our users' privacy."
+                        }
+                        h5 class="text-3xl text-gray-800 font-bold mb-3" {
+                            "Third-Party Services"
+                        }
+                        p class="text-gray-600 mb-8" {
+                            "We do not use any third-party services that may access or collect your personal information."
+                        }
+                        h5 class="text-3xl text-gray-800 font-bold mb-3" {
+                            "Your Rights"
+                        }
+                        p class="text-gray-600 mb-8" {
+                            "As a user of our service, you have the right to access, rectify, and delete your personal "
+                            "information. You also have the right to object to processing, request a restriction of processing, "
+                            "and request the transfer of your personal information to another controller. If you would like "
+                            "to exercise these rights, please contact us."
+                        }
+                        h5 class="text-3xl text-gray-800 font-bold mb-3" {
+                            "Automated Decision-Making"
+                        }
+                        p class="text-gray-600 mb-8" {
+                            "We do not use automated decision-making."
+                        }
+                        h5 class="text-3xl text-gray-800 font-bold mb-3" {
+                            "Data Sources"
+                        }
+                        p class="text-gray-600 mb-8" {
+                            "We do not receive data from any other organization. All data is collected directly from the user."
+                        }
+                        h5 class="text-3xl text-gray-800 font-bold mb-3" {
+                            "Data Obligation"
+                        }
+                        p class="text-gray-600 mb-8" {
+                            "The customer is obliged to provide us with their email address for communication purposes. He or "
+                            "she is not obligeide any other personal information to us."
+                        }
+                        h5 class="text-3xl text-gray-800 font-bold mb-3" {
+                            "Where to File a Complaint"
+                        }
+                        p class="text-gray-600 mb-8" {
+                            "If you have any concerns about the way we handle your personal information, you may file a "
+                            "complaint witt supervisory authority."
+                        }
+                        p class="text-gray-600" {
+                            "Thank you for using Heavy Metal Releases Notifier."
+                        }
                     }
-					p class="text-gray-600 mb-8" {
-						"At Heavy Metal Releases Notifier, your privacy is important to us. Our service is designed to "
-						"provide a secure and efficient experience for our users, and we take the protection of your personal "
-						"information seriously."
+                    div class="w-full md:w-1/2" {
+                        img src="/static/img/dicoo.png" alt="Monitoring";
                     }
-					h5 class="text-3xl text-gray-800 font-bold mb-3" {
-						"Information Collection and Use"
-                    }
-					p class="text-gray-600 mb-8" {
-						"We only collect the email address of the user who registers for our service. We do not collect "
-						"any other personal information and do not use any data analytics services. The personal data is "
-						"only processed on our servers and is not transferred outside the EU."
-                    }
-					h5 class="text-3xl text-gray-800 font-bold mb-3" {
-						"Data Retention"
-                    }
-					p class="text-gray-600 mb-8" {
-						"Your data is deleted from the live database when you stop using our service. You can do so by clicking "
-						"the unsubscribe button at the bottom of one of our emails. Until then, your data is kept indefinitely."
-                    }
-					h5 class="text-3xl text-gray-800 font-bold mb-3" {
-						"Cookies"
-                    }
-					p class="text-gray-600 mb-8" {
-						"We want to assure our users that we do not use any type of cookies on our website, including "
-						"third-party cookies. This means that we do not collect or store any information about our users' "
-						"browsing habits or use of the website. We are cookie-free and do not engage in any tracking "
-						"or advertising activities that may compromise our users' privacy."
-                    }
-					h5 class="text-3xl text-gray-800 font-bold mb-3" {
-						"Third-Party Services"
-					}
-					p class="text-gray-600 mb-8" {
-						"We do not use any third-party services that may access or collect your personal information."
-					}
-					h5 class="text-3xl text-gray-800 font-bold mb-3" {
-						"Your Rights"
-					}
-					p class="text-gray-600 mb-8" {
-						"As a user of our service, you have the right to access, rectify, and delete your personal "
-						"information. You also have the right to object to processing, request a restriction of processing, "
-						"and request the transfer of your personal information to another controller. If you would like "
-						"to exercise these rights, please contact us."
-                    }
-					h5 class="text-3xl text-gray-800 font-bold mb-3" {
-						"Automated Decision-Making"
-					}
-					p class="text-gray-600 mb-8" {
-						"We do not use automated decision-making."
-					}
-					h5 class="text-3xl text-gray-800 font-bold mb-3" {
-						"Data Sources"
-					}
-					p class="text-gray-600 mb-8" {
-						"We do not receive data from any other organization. All data is collected directly from the user."
-					}
-					h5 class="text-3xl text-gray-800 font-bold mb-3" {
-						"Data Obligation"
-					}
-					p class="text-gray-600 mb-8" {
-						"The customer is obliged to provide us with their email address for communication purposes. He or "
-						"she is not obligeide any other personal information to us."
-                    }
-					h5 class="text-3xl text-gray-800 font-bold mb-3" {
-						"Where to File a Complaint"
-					}
-					p class="text-gray-600 mb-8" {
-						"If you have any concerns about the way we handle your personal information, you may file a "
-						"complaint witt supervisory authority."
-                    }
-					p class="text-gray-600" {
-						"Thank you for using Heavy Metal Releases Notifier."
-					}
-                }
-				div class="w-full md:w-1/2" {
-					img src="/static/img/dicoo.png" alt="Monitoring";
                 }
             }
-        }
-    ))
+        ),
+    )
 }
 
 pub fn tos() -> Markup {

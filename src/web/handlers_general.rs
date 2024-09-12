@@ -1,5 +1,8 @@
 use axum::{
-    handler::HandlerWithoutStateExt, http::StatusCode, routing::{any_service, get, MethodRouter}, Router
+    handler::HandlerWithoutStateExt,
+    http::StatusCode,
+    routing::{any_service, get, MethodRouter},
+    Router,
 };
 use maud::Markup;
 use tower_http::services::ServeDir;

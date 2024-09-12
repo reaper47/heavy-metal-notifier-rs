@@ -5,14 +5,16 @@ pub type Result<T> = core::result::Result<T, Error>;
 #[allow(unused)]
 #[derive(Debug, From)]
 pub enum Error {
-    // Env
     MissingEnv(&'static str),
+    RequestFail,
 
     // Externals
     #[from]
     Env(std::env::VarError),
     #[from]
     Io(std::io::Error),
+    #[from]
+    Reqwest(reqwest::Error),
 }
 
 impl core::fmt::Display for Error {
