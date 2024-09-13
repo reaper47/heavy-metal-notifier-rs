@@ -1,12 +1,11 @@
 mod config;
-mod error;
 mod handlers_general;
 mod templates;
 
 use axum::Router;
 
 use config::web_config;
-use error::Result;
+use crate::error::Result;
 use handlers_general::{routes_general, serve_dir};
 
 pub async fn routes() -> Result<Router> {

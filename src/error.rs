@@ -5,10 +5,17 @@ pub type Result<T> = core::result::Result<T, Error>;
 #[allow(unused)]
 #[derive(Debug, From)]
 pub enum Error {
+    EntityNotFound {
+        entity: &'static str,
+        id: i64,
+    },
     MissingEnv(&'static str),
     RequestFail,
+    CalendarUpdateFail,
 
     // Externals
+    #[from]
+    Diesel(diesel::result::Error),
     #[from]
     Env(std::env::VarError),
     #[from]

@@ -2,17 +2,20 @@ use std::collections::HashMap;
 
 use scraper::{ElementRef, Html, Selector};
 
-use crate::{calendar::{Calendar, Month, Release}, error::Result};
+use crate::{
+    calendar::{Calendar, Month, Release},
+    error::Result,
+};
 
 use super::client::Client;
 
 pub async fn scrape(client: &impl Client, year: i32) -> Result<Calendar> {
-    let doc = client.get(year).await?;
-    Ok(extract_calendar(doc))
+    let doc = client.get_calendar(year).await?;
+    Ok(extract_calendar(doc, year))
 }
 
-fn extract_calendar(doc: Html) -> Calendar {
-    let mut calendar = Calendar::new();
+fn extract_calendar(doc: Html, year: i32) -> Calendar {
+    let mut calendar = Calendar::new(year);
 
     let mut current_day: u8 = 1;
     let mut current_artist = "".to_string();
@@ -20,13 +23,13 @@ fn extract_calendar(doc: Html) -> Calendar {
     let tables: HashMap<&str, Month> = HashMap::from([
         ("#table_January", Month::January),
         ("#table_February", Month::February),
-		("#table_Febuary", Month::February),
+        ("#table_Febuary", Month::February),
         ("#table_March", Month::March),
         ("#table_April", Month::April),
         ("#table_May", Month::May),
         ("#table_June", Month::June),
         ("#table_July", Month::July),
-        ("#table_August", Month::August, ),
+        ("#table_August", Month::August),
         ("#table_September", Month::September),
         ("#table_October", Month::October),
         ("#table_November", Month::November),
@@ -96,7 +99,8 @@ fn process_table(
                 calendar.add_release(month, *current_day, Release::new(artist, album))
             }
             3 => {
-                let day: core::result::Result<u8, _> = cells[0].text().collect::<String>().trim().parse();
+                let day: core::result::Result<u8, _> =
+                    cells[0].text().collect::<String>().trim().parse();
                 if let Ok(day) = day {
                     *current_day = day;
                 }
@@ -122,18 +126,20 @@ mod tests {
     use super::*;
 
     use crate::{
-        calendar::{CalendarData, Releases}, scraper::client::tests::MockClient,
+        calendar::{CalendarData, Releases},
+        scraper::client::tests::MockClient,
     };
 
     type Result<T> = core::result::Result<T, Box<dyn std::error::Error>>;
 
     #[tokio::test]
     async fn test_2022_calendar_ok() -> Result<()> {
-        let client = MockClient {};
+        let client = MockClient::new();
 
         let got = client.scrape(2022).await?;
 
         let want = Calendar {
+			year: 2022,
             data: CalendarData::from([
                 (Month::January, Releases::from([
 					(7, vec![
@@ -852,11 +858,12 @@ mod tests {
 
     #[tokio::test]
     async fn test_2023_calendar_ok() -> Result<()> {
-        let client = MockClient {};
+        let client = MockClient::new();
 
         let got = client.scrape(2023).await?;
 
         let want = Calendar {
+			year: 2023,
 			data: CalendarData::from([
 				(Month::January, Releases::from([
 					(13, vec![
@@ -1483,11 +1490,12 @@ mod tests {
 
     #[tokio::test]
     async fn test_2024_calendar_ok() -> Result<()> {
-        let client = MockClient {};
+        let client = MockClient::new();
 
         let got = client.scrape(2024).await?;
 
         let want = Calendar {
+			year: 2024,
 			data: CalendarData::from([
 				(Month::January, Releases::from([
 					(5, vec![Release::new("Panzerchrist", "All Witches Shall Burn (EP)")]),

@@ -1,7 +1,10 @@
-use tracing::error;
+use time::OffsetDateTime;
 
-pub async fn update_calendar() {
-    if let Err(err) = crate::CALENDAR.lock().await.update().await {
-        error!("Error updating calendar: {err}")
-    }
+use crate::{error::Result, model::CalendarBmc, scraper::{client::MainClient, wiki::scrape}};
+
+pub async fn update_calendar() -> Result<()> {
+    let client = MainClient::new();
+    let calendar = scrape(&client, OffsetDateTime::now_utc().year()).await?;
+    CalendarBmc::create_or_update(calendar)?;
+    Ok(())
 }

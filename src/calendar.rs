@@ -2,8 +2,12 @@ use std::collections::HashMap;
 
 use reqwest::Url;
 use time::OffsetDateTime;
+use tracing::info;
 
-use crate::{error::Result, scraper::{client::MainClient, wiki::scrape}};
+use crate::{
+    error::Result,
+    scraper::{client::Client, wiki::scrape},
+};
 
 pub type CalendarData = HashMap<Month, Releases>;
 
@@ -49,6 +53,20 @@ impl Release {
             links: Vec::new(),
         }
     }
+
+    pub async fn generate_links(&mut self, client: &impl Client) {
+        let query = format!("{} {} full album", self.artist, self.album);
+        let mut query_encoded = String::new();
+        url_escape::encode_query_to_string(query, &mut query_encoded);
+
+        let yt_url = format!("https://www.youtube.com/results?search_query={query_encoded}");
+        let yt_url = Url::parse(&yt_url).unwrap();
+
+        self.links.push(Link::Youtube(yt_url));
+        /*if let Some(url) = client.get_bandcamp_link(self.artist.clone()).await {
+            self.links.push(Link::Bandcamp(url))
+        }*/
+    }
 }
 
 #[derive(Clone, Debug, PartialEq)]
@@ -59,12 +77,14 @@ pub enum Link {
 
 #[derive(Debug, PartialEq)]
 pub struct Calendar {
+    pub year: i32,
     pub data: CalendarData,
 }
 
 impl Calendar {
-    pub fn new() -> Self {
+    pub fn new(year: i32) -> Self {
         Self {
+            year,
             data: HashMap::from([
                 (Month::January, HashMap::new()),
                 (Month::February, HashMap::new()),
@@ -95,12 +115,24 @@ impl Calendar {
         self.data.get(&month).and_then(|map| map.get(&day))
     }
 
-    pub async fn update(&mut self) -> Result<()> {
+    pub async fn update(&mut self, client: &impl Client) -> Result<()> {
+        info!("Updating calendar");
+
         let now = OffsetDateTime::now_utc();
         let year = now.year();
-    
-        let client = MainClient::new();        
-        let calendar = scrape(&client, year).await?;
+        let mut calendar = scrape(client, year).await?;
+
+        let mut releases = Vec::new();
+        // Get mutable releases of the month to reduce number of requests to Bandcamp.
+        for (_, day_releases) in calendar.data.iter_mut() {
+            for (_, release_list) in day_releases.iter_mut() {
+                releases.extend(release_list.drain(..))
+            }
+        }
+        for release in &mut releases {
+            release.generate_links(client).await;
+        }
+
         self.data = calendar.data;
 
         Ok(())
@@ -115,7 +147,7 @@ mod tests {
 
     #[test]
     fn test_default_calendar_empty_ok() -> Result<()> {
-        let got = Calendar::new();
+        let got = Calendar::new(2024);
 
         pretty_assertions::assert_eq!(
             got.data,
@@ -139,12 +171,12 @@ mod tests {
 
     #[test]
     fn test_calendar_add_release_ok() -> Result<()> {
-        let mut got = Calendar::new();
+        let mut got = Calendar::new(2024);
         let release = Release::new("Wintersun", "Time II");
 
         got.add_release(Month::August, 30, release.clone());
 
-        let mut want = Calendar::new();
+        let mut want = Calendar::new(2024);
         want.data
             .insert(Month::August, HashMap::from([(30, vec![release])]));
         pretty_assertions::assert_eq!(got, want);
@@ -155,6 +187,7 @@ mod tests {
     fn test_calendar_get_releases_ok() -> Result<()> {
         let release = Release::new("Wintersun", "Time II");
         let calendar = Calendar {
+            year: 2024,
             data: CalendarData::from([(
                 Month::August,
                 Releases::from([(30, vec![release.clone()])]),

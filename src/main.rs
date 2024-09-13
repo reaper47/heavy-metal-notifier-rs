@@ -1,30 +1,35 @@
 mod error;
 
 use dotenv::dotenv;
-use tokio_cron_scheduler::{Job, JobScheduler};
 use std::env;
 use tokio::{net::TcpListener, signal};
-use tracing::info;
+use tokio_cron_scheduler::{Job, JobScheduler};
+use tracing::{error, info};
 
-use error::Result;
-use heavy_metal_notifier::{jobs, web::routes};
+use heavy_metal_notifier::{Result, jobs, web::routes};
 
 #[tokio::main]
 async fn main() -> Result<()> {
     dotenv().ok();
     tracing_subscriber::fmt::init();
 
-    jobs::update_calendar().await;
+    jobs::update_calendar().await?;
 
     let sched = JobScheduler::new().await?;
-    sched.add(
-        Job::new_async("0 0 0 1 * 1 *", |_uuid, _l| {
-            Box::pin(async move {
-                info!("Running calendar update job");
-                jobs::update_calendar().await;
-            })
-        })?
-    ).await?;
+    sched
+        .add(
+            // At 12:00 AM, on day 1 of the month
+            Job::new_async("0 0 0 1 * * *", |_uuid, _l| {
+                Box::pin(async move {
+                    info!("Updating calendar");
+                    if let Err(err) = jobs::update_calendar().await {
+                        error!("Error updating calendar: {err}")
+                    };
+                    info!("Calendar updated")
+                })
+            })?,
+        )
+        .await?;
     sched.shutdown_on_ctrl_c();
     sched.start().await?;
 
