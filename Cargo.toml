@@ -6,7 +6,7 @@ edition = "2021"
 [dependencies]
 axum = "0.7.5"
 derive_more = { version = "1.0.0", features = ["from", "display"] }
-diesel = { version = "2.2.0", features = ["sqlite", "r2d2", "returning_clauses_for_sqlite_3_35"] }
+diesel = { version = "2.2.0", features = ["sqlite", "returning_clauses_for_sqlite_3_35"] }
 diesel_migrations = "2.2.0"
 dotenv = "0.15.0"
 lazy_static = "1.5.0"
