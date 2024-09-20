@@ -2,7 +2,7 @@ use axum::async_trait;
 use reqwest::Url;
 use scraper::Html;
 
-use crate::{calendar::Release, error::Result};
+use crate::error::Result;
 
 pub struct MainClient;
 
@@ -46,7 +46,7 @@ impl Client for MainClient {
             }
             Err(_) => None,
         };
-        std::thread::sleep(std::time::Duration::from_millis(100));
+        std::thread::sleep(std::time::Duration::from_millis(200));
         res
     }
 }

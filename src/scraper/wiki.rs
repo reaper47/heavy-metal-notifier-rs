@@ -1,9 +1,10 @@
 use std::collections::HashMap;
 
 use scraper::{ElementRef, Html, Selector};
+use time::Month;
 
 use crate::{
-    calendar::{Calendar, Month, Release},
+    calendar::{Calendar, Release},
     error::Result,
 };
 
@@ -1997,6 +1998,7 @@ mod tests {
 					]),
 					(18, vec![
 						Release::new("Astral Doors", "The End of It All"),
+						Release::new("Deivos", "Apophenia"),
 						Release::new("DGM", "Endless"),
 						Release::new("Ensiferum", "Winter Storm"),
 						Release::new("Fate", "Reconnect ‘n Ignite"),
@@ -2027,6 +2029,7 @@ mod tests {
 					(1, vec![
 						Release::new("Brothers of Metal", "Fimbulvinter"),
 						Release::new("Nachtmystium", "Blight Privilege"),
+						Release::new("Powerflo", "Gorilla Warfare"),
 						Release::new("Skillet", "Revolution"),
 						Release::new("Tribulation", "Sub Rosa in Æternum"),
 						Release::new("Vola", "Friend of a Phantom"),

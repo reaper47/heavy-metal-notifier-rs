@@ -1,36 +1,15 @@
 use std::collections::HashMap;
 
 use reqwest::Url;
-use time::OffsetDateTime;
-use tracing::info;
+use time::Month;
 
-use crate::{
-    error::Result,
-    scraper::{client::Client, wiki::scrape},
-};
+use crate::scraper::client::Client;
 
 pub type CalendarData = HashMap<Month, Releases>;
 
 type Day = u8;
 
 pub type Releases = HashMap<Day, Vec<Release>>;
-
-#[allow(dead_code)]
-#[derive(Copy, Clone, Debug, Eq, Hash, PartialEq)]
-pub enum Month {
-    January,
-    February,
-    March,
-    April,
-    May,
-    June,
-    July,
-    August,
-    September,
-    October,
-    November,
-    December,
-}
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct Release {
@@ -63,6 +42,7 @@ impl Release {
         let yt_url = Url::parse(&yt_url).unwrap();
 
         self.links.push(Link::Youtube(yt_url));
+        // TODO: Enable this
         /*if let Some(url) = client.get_bandcamp_link(self.artist.clone()).await {
             self.links.push(Link::Bandcamp(url))
         }*/
@@ -115,27 +95,14 @@ impl Calendar {
         self.data.get(&month).and_then(|map| map.get(&day))
     }
 
-    pub async fn update(&mut self, client: &impl Client) -> Result<()> {
-        info!("Updating calendar");
-
-        let now = OffsetDateTime::now_utc();
-        let year = now.year();
-        let mut calendar = scrape(client, year).await?;
-
-        let mut releases = Vec::new();
-        // Get mutable releases of the month to reduce number of requests to Bandcamp.
-        for (_, day_releases) in calendar.data.iter_mut() {
-            for (_, release_list) in day_releases.iter_mut() {
-                releases.extend(release_list.drain(..))
+    pub async fn update_links(&mut self, client: &impl Client) {
+        for (_, day_releases) in self.data.iter_mut() {
+            for (_, releases) in day_releases.iter_mut() {
+                for release in releases {
+                    release.generate_links(client).await;
+                }
             }
         }
-        for release in &mut releases {
-            release.generate_links(client).await;
-        }
-
-        self.data = calendar.data;
-
-        Ok(())
     }
 }
 

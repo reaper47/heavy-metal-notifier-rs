@@ -6,15 +6,17 @@ use tokio::{net::TcpListener, signal};
 use tokio_cron_scheduler::{Job, JobScheduler};
 use tracing::{error, info};
 
-use heavy_metal_notifier::{Result, jobs, web::routes};
+use heavy_metal_notifier::{jobs, web::routes, Result};
 
 #[tokio::main]
 async fn main() -> Result<()> {
     dotenv().ok();
     tracing_subscriber::fmt::init();
 
+    info!("Fetching and storing calendar");
     jobs::update_calendar().await?;
 
+    info!("Scheduling jobs");
     let sched = JobScheduler::new().await?;
     sched
         .add(
