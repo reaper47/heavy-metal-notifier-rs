@@ -6,4 +6,4 @@ file = "src/model/schema.rs"
 custom_type_derives = ["diesel::query_builder::QueryId", "Clone"]
 
 [migrations_directory]
-dir = "C:\\Users\\Irène\\Documents\\heavy-metal-notifier-rs\\src\\model\\store\\migrations"
+dir = "src/model/store/migrations"

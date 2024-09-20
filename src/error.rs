@@ -1,5 +1,6 @@
 use derive_more::derive::From;
 
+#[allow(unused)]
 pub type Result<T> = core::result::Result<T, Error>;
 
 #[allow(unused)]
@@ -9,6 +10,7 @@ pub enum Error {
         entity: &'static str,
         id: i64,
     },
+    DbFeedError,
     MissingEnv(&'static str),
     RequestFail,
     CalendarUpdateFail,

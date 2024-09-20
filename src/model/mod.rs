@@ -1,8 +1,10 @@
 mod calendar;
+mod feed;
 mod store;
 
 pub(in crate::model) mod schema;
 pub use calendar::CalendarBmc;
+pub use feed::{Feed, FeedBmc, FeedForCreate};
 
 use diesel::prelude::*;
 

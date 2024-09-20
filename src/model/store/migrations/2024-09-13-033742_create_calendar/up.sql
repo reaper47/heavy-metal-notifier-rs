@@ -18,3 +18,9 @@ CREATE TABLE links (
     url_youtube TEXT NOT NULL,
     url_bandcamp TEXT
 );
+
+CREATE TABLE feeds (
+    id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    date INTEGER NOT NULL,
+    feed TEXT NOT NULL
+);

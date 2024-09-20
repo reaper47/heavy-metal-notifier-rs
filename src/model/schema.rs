@@ -8,6 +8,14 @@ diesel::table! {
 }
 
 diesel::table! {
+    feeds (id) {
+        id -> Integer,
+        date -> Integer,
+        feed -> Text,
+    }
+}
+
+diesel::table! {
     links (id) {
         id -> Integer,
         artist_id -> Integer,
@@ -30,4 +38,4 @@ diesel::table! {
 diesel::joinable!(links -> artists (artist_id));
 diesel::joinable!(releases -> artists (artist_id));
 
-diesel::allow_tables_to_appear_in_same_query!(artists, links, releases,);
+diesel::allow_tables_to_appear_in_same_query!(artists, feeds, links, releases,);
