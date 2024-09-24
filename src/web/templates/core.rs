@@ -121,12 +121,12 @@ fn footer() -> Markup {
                         }
                         ul class="mb-4" {
                             li class="mt-2" {
-                                a href="/contact" class="hover:underline text-gray-600 hover:text-orange-500" {
+                                a href="/contact" class="hover:underline hover:text-orange-500" {
                                     "Support"
                                 }
                             }
                             li class="mt-2" {
-                                a href="/sitemap" class="hover:underline text-gray-600 hover:text-orange-500" {
+                                a href="/sitemap" class="hover:underline hover:text-orange-500" {
                                     "Sitemap"
                                 }
                             }
@@ -138,12 +138,12 @@ fn footer() -> Markup {
                         }
                         ul class="mb-4" {
                             li class="mt-2" {
-                                a href="/tos" class="hover:underline text-gray-600 hover:text-orange-500" {
+                                a href="/tos" class="hover:underline hover:text-orange-500" {
                                     "Terms of Service"
                                 }
                             }
                             li class="mt-2" {
-                                a href="/privacy" class="hover:underline text-gray-600 hover:text-orange-500" {
+                                a href="/privacy" class="hover:underline hover:text-orange-500" {
                                     "Privacy Policy"
                                 }
                             }
@@ -155,12 +155,12 @@ fn footer() -> Markup {
                         }
                         ul class="mb-4" {
                             li class="mt-2" {
-                                a href="/about" class="hover:underline text-gray-600 hover:text-orange-500" {
+                                a href="/about" class="hover:underline hover:text-orange-500" {
                                     "About Us"
                                 }
                             }
                             li class="mt-2" {
-                                a href="/contact" class="hover:underline text-gray-600 hover:text-orange-500" {
+                                a href="/contact" class="hover:underline hover:text-orange-500" {
                                     "Contact"
                                 }
                             }

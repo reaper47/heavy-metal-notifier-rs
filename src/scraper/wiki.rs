@@ -1993,8 +1993,8 @@ mod tests {
 						Release::new("Dragony", "Hic Svnt Dracones"),
 						Release::new("Frozen Crown", "War Hearts"),
 						Release::new("House of Lords", "Full Tilt Overdrive"),
-						Release::new("Opeth", "The Last Will and Testament"),
 						Release::new("Oranssi Pazuzu", "Muuntautuja"),
+						Release::new("The Sword", "Live at Levitation (live album)"),
 					]),
 					(18, vec![
 						Release::new("Astral Doors", "The End of It All"),
@@ -2019,6 +2019,7 @@ mod tests {
 						Release::new("Fit for an Autopsy", "The Nothing That Is"),
 						Release::new("Hatchet", "Leave No Soul (EP)"),
 						Release::new("Loudblast", "Altering Fates and Destinies"),
+						Release::new("Motörhead", "We Take No Prisoners (The Singles 1995–2006) (box set)"),
 						Release::new("Turmion Kätilöt", "Reset"),
 					]),
 					(31, vec![
@@ -2047,12 +2048,15 @@ mod tests {
 						Release::new("As I Lay Dying", "Through Storms Ahead"),
 						Release::new("The Foreshadowing", "New Wave Order"),
 						Release::new("Linkin Park", "From Zero"),
+						Release::new("Poppy", "Negative Spaces"),
 						Release::new("Thy Catafalque", "XII: A Gyönyörü Álmok Ezután Jönnek"),
 					]),
 					(22, vec![
+						Release::new("Body Count", "Merciless"),
 						Release::new("Dawn of Destiny", "IX"),
 						Release::new("Defeated Sanity", "Chronicles of Lunacy"),
 						Release::new("Ocean Grove", "Oddworld"),
+						Release::new("Opeth", "The Last Will and Testament"),
 					]),
 				])),
 			]),
