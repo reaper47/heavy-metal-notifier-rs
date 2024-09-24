@@ -19,7 +19,7 @@ pub fn index() -> Markup {
                         "Never miss a headbang-worthy album again. Stay in tune with our band release notifier!"
                     }
                     p href="/start" class="flex bg-white font-bold rounded-full py-4 px-8 shadow-lg uppercase tracking-wider" {
-                        "Subscribe via" 
+                        "Subscribe via"
                         a href=(format!("{}/calendar/feed.xml", config().BASE_URL)) style="padding-left: 12px" {
                             img src="https://upload.wikimedia.org/wikipedia/commons/thumb/4/43/Feed-icon.svg/128px-Feed-icon.svg.png" height="32px" width="32px" alt="rss icon";
                         }
@@ -37,7 +37,7 @@ pub fn index() -> Markup {
                         }
                         div class="text-gray-600 mb-8" {
                             p {
-                                "The only thing you must do is install an RSS app and add the " 
+                                "The only thing you must do is install an RSS app and add the "
                                 span class="text-blue-600 visited:text-purple-600" { (format!("{}/calendar/feed.xml", config().BASE_URL)) }
                                 " feed."
                             }
@@ -65,7 +65,7 @@ pub fn index() -> Markup {
                             }
                             br;
                             p {
-                                b {"Linux:" } 
+                                b {"Linux:" }
                                 ul class="list-disc" {
                                     li {
                                         a class="text-blue-600 visited:text-purple-600" href="https://gfeeds.gabmus.org/" target="_blank" { "GNOME Feeds" }
@@ -144,7 +144,7 @@ pub fn index() -> Markup {
                         "Keep track of the latest heavy metal album releases with our notifier, and never lose your headbanging rhythm again!"
                     }
                     p href="/start" class="flex bg-white font-bold rounded-full py-4 px-8 shadow-lg uppercase tracking-wider" {
-                        "Subscribe via" 
+                        "Subscribe via"
                         a href=(format!("{}/calendar/feed.xml", config().BASE_URL)) style="padding-left: 12px" {
                             img src="https://upload.wikimedia.org/wikipedia/commons/thumb/4/43/Feed-icon.svg/128px-Feed-icon.svg.png" height="32px" width="32px" alt="rss icon";
                         }

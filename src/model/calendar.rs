@@ -73,31 +73,46 @@ impl CalendarBmc {
             for (month, data) in calendar.data.iter() {
                 for (day, releases) in data.iter() {
                     for release in releases.iter() {
-                        let artist_id: i32 = diesel::insert_or_ignore_into(artists::table)
+                        let artist_id: i32 = match diesel::insert_or_ignore_into(artists::table)
                             .values(artists::name.eq(release.artist.clone()))
                             .returning(artists::id)
-                            .get_result(conn)?;
-
-                        let mut link_for_insert = LinkForInsert {
-                            artist_id,
-                            url_youtube: String::new(),
-                            url_bandcamp: None,
+                            .get_result(conn)
+                        {
+                            Ok(id) => id,
+                            Err(_) => artists::table
+                                .filter(artists::name.eq(release.artist.clone()))
+                                .limit(1)
+                                .select(artists::id)
+                                .get_result(conn)?,
                         };
 
-                        for link in release.links.iter() {
-                            match link {
-                                crate::calendar::Link::Bandcamp(url) => {
-                                    link_for_insert.url_bandcamp = Some(url.to_string())
-                                }
-                                crate::calendar::Link::Youtube(url) => {
-                                    link_for_insert.url_youtube = url.to_string()
-                                }
-                            };
-                        }
+                        let links: Vec<Link> = links::table
+                            .filter(links::artist_id.eq(artist_id))
+                            .select(Link::as_select())
+                            .load(conn)?;
 
-                        diesel::insert_or_ignore_into(links::table)
-                            .values(&link_for_insert)
-                            .execute(conn)?;
+                        if links.is_empty() {
+                            let mut link_for_insert = LinkForInsert {
+                                artist_id,
+                                url_youtube: String::new(),
+                                url_bandcamp: None,
+                            };
+
+                            for link in release.links.iter() {
+                                match link {
+                                    crate::calendar::Link::Bandcamp(url) => {
+                                        link_for_insert.url_bandcamp = Some(url.to_string())
+                                    }
+                                    crate::calendar::Link::Youtube(url) => {
+                                        link_for_insert.url_youtube = url.to_string()
+                                    }
+                                };
+                            }
+
+                            diesel::insert_or_ignore_into(links::table)
+                                .values(&link_for_insert)
+                                .execute(conn)?;
+                        }
 
                         diesel::insert_into(releases::table)
                             .values(&ReleaseForInsert {

@@ -59,7 +59,7 @@ async fn feed() -> impl IntoResponse {
                             .title("Heavy Metal Releases")
                             .description("A feed for the latest heavy metal album releases.")
                             .pub_date(pub_date)
-                            .link("/feed")
+                            .link("/calendar/feed.xml")
                             .image(image)
                             .items(items)
                             .build()
@@ -76,7 +76,7 @@ async fn feed() -> impl IntoResponse {
                                         "A feed for the latest heavy metal album releases.",
                                     )
                                     .pub_date(pub_date)
-                                    .link("/feed")
+                                    .link("/calendar/feed.xml")
                                     .image(image)
                                     .items(items)
                                     .build()
@@ -97,7 +97,11 @@ async fn feed() -> impl IntoResponse {
                 },
             };
 
-            ([(CONTENT_TYPE, "text/xml;charset=UTF-8")], channel.to_string()).into_response()
+            (
+                [(CONTENT_TYPE, "text/xml;charset=UTF-8")],
+                channel.to_string(),
+            )
+                .into_response()
         }
         Err(err) => {
             error!(
@@ -141,7 +145,7 @@ fn create_new_feed(pub_date: String, date: String, date_int: i32) -> Result<Chan
                     .pub_date(pub_date.clone())
                     .last_build_date(pub_date)
                     .language("en-US".to_string())
-                    .link("/feed")
+                    .link("/calendar/feed.xml")
                     .build()
             } else {
                 let mut guid = Guid::default();
@@ -158,7 +162,7 @@ fn create_new_feed(pub_date: String, date: String, date_int: i32) -> Result<Chan
                     .title("Heavy Metal Releases")
                     .description("A feed for the latest heavy metal album releases.")
                     .pub_date(pub_date)
-                    .link("/feed")
+                    .link("/calendar/feed.xml")
                     .item(item)
                     .build();
 
@@ -189,6 +193,6 @@ fn build_default_channel(pub_date: String) -> Channel {
         .pub_date(pub_date.clone())
         .last_build_date(pub_date)
         .language("en-US".to_string())
-        .link("/feed")
+        .link("/calendar/feed.xml")
         .build()
 }
