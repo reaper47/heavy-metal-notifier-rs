@@ -3,7 +3,7 @@ use std::collections::HashMap;
 use reqwest::Url;
 use time::Month;
 
-use crate::scraper::client::Client;
+use crate::{config::config, scraper::client::Client};
 
 pub type CalendarData = HashMap<Month, Releases>;
 
@@ -42,10 +42,11 @@ impl Release {
         let yt_url = Url::parse(&yt_url).unwrap();
 
         self.links.push(Link::Youtube(yt_url));
-        // TODO: Enable this
-        /*if let Some(url) = client.get_bandcamp_link(self.artist.clone()).await {
-            self.links.push(Link::Bandcamp(url))
-        }*/
+        if config().IS_PROD {
+            if let Some(url) = client.get_bandcamp_link(self.artist.clone()).await {
+                self.links.push(Link::Bandcamp(url))
+            }
+        }
     }
 }
 

@@ -1,6 +1,6 @@
 use maud::{html, Markup, DOCTYPE};
 
-use crate::web::templates::Page;
+use crate::{config::config, web::templates::Page};
 
 pub fn layout(title: &str, is_show_nav: bool, page: Page, content: Markup) -> Markup {
     html!(
@@ -41,64 +41,71 @@ fn head(title: &str) -> Markup {
             link rel="canonical" href="https://metal.musicavis.ca/";
             link rel="icon" href="/static/favicon.png" type="image/x-icon";
             link rel="stylesheet" href="/static/css/tailwind.css";
+            link rel="alternate" type="application/rss+xml" title="Heavy Metal Releases Feed" href=(format!("{}/calendar/feed.xml", config().BASE_URL));
         }
     )
 }
 
 fn nav(page: Page) -> Markup {
+    let nav_items = nav_items(page);
+
     html!(
         nav {
-            div class="container mx-auto px-6 py-2 flex justify-between items-center" {
-                a class="font-bold lg:text-3xl" style="display: ruby" href="/" {
-                    img src="/static/img/logo-64x64.png" alt="logo" class="w-[2.5rem]" {
-                        "Heavy Metal Releases"
+            div class="navbar bg-base-100" {
+                div class="navbar-start" {
+                    img src="/static/img/logo-64x64.png" alt="logo" class="w-[2.5rem]";
+                    a class="btn btn-ghost text-xl" { "Heavy Metal Releases" }
+                }
+                div class="navbar-end" {
+                    div class="dropdown dropdown-end" {
+                        div tabindex="0" role="button" class="btn btn-ghost lg:hidden" {
+                            svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            class="h-5 w-5"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor" {
+                                path
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                                stroke-width="2"
+                                d="M4 6h16M4 12h8m-8 6h16";
+                            }
+                        }
+                        ul tabindex="0" class="menu menu-sm dropdown-content bg-base-100 rounded-box z-[1] mt-3 w-52 p-2 shadow" {
+                            (nav_items)
+                        }
                     }
                 }
-                div class="flex flex-col relative" {
-                    div id="menu-icon" class="block lg:hidden" {
-                        button class="flex items-center px-3 py-2 border rounded text-gray-500 border-gray-600 hover:text-gray-800 hover:border-teal-500 appearance-none focus:outline-none" {
-                            svg class="fill-current h-3 w-3" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg" {
-                                title {
-                                 "Menu"
-                                }
-                                path d="M0 3h20v2H0V3zm0 6h20v2H0V9zm0 6h20v2H0v-2z" {}
-                            }
-                        }
-                    }
-                    div id="menu" class="hidden absolute top-[2.45rem]  bg-white right-[-1.5rem] w-[100vw] text-center lg:block lg:relative lg:w-auto lg:bg-transparent lg:top-0" {
-                        ul class="lg:flex" {
-                            li class="py-2" {
-                                a class={
-                                    "px-4"
-                                    @if page == Page::Home { " font-bold"}
-                                    @if page != Page::Home { " hover:text-gray-800" }
-                                }
-                                href="/" {
-                                    "Home"
-                                }
-                            }
-                            li class="py-2" {
-                                a class={
-                                    "px-4"
-                                    @if page == Page::About { " font-bold"}
-                                    @if page != Page::Home { " hover:text-gray-800" }
-                                } href="/about" {
-                                    "About"
-                                }
-                            }
-                            li class="py-2" {
-                                a class={
-                                    "px-4"
-                                    @if page == Page::Contact { " font-bold"}
-                                    @if page != Page::Home { " hover:text-gray-800" }
-                                } href="/contact" {
-                                    "Contact"
-                                }
-                            }
-                        }
+                div class="navbar-end hidden lg:flex" {
+                    ul class="menu menu-horizontal px-1" {
+                        (nav_items)
                     }
                 }
             }
+        }
+    )
+}
+
+fn nav_items(page: Page) -> Markup {
+    html!(
+        li {
+            a href="/" class={
+                @if page == Page::Home { "font-bold"}
+                @if page != Page::Home { " hover:text-gray-800" }
+            } { "Home" }
+        }
+        li {
+            a href="/about" class={
+                @if page == Page::About { "font-bold"}
+                @if page != Page::Home { " hover:text-gray-800" }
+            } { "About" }
+        }
+        li {
+            a href="/contact" class={
+                @if page == Page::Contact { "font-bold"}
+                @if page != Page::Home { " hover:text-gray-800" }
+            } { "Contact" }
         }
     )
 }

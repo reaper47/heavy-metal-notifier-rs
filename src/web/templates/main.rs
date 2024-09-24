@@ -1,5 +1,7 @@
 use maud::{html, Markup, PreEscaped};
 
+use crate::config::config;
+
 use super::{core::layout, Page};
 
 pub fn index() -> Markup {
@@ -16,8 +18,11 @@ pub fn index() -> Markup {
                     h3 class="text-2xl mb-8 text-gray-200" {
                         "Never miss a headbang-worthy album again. Stay in tune with our band release notifier!"
                     }
-                    a href="/start" class="bg-white font-bold rounded-full py-4 px-8 shadow-lg uppercase tracking-wider" {
-                        "Start Now"
+                    p href="/start" class="flex bg-white font-bold rounded-full py-4 px-8 shadow-lg uppercase tracking-wider" {
+                        "Subscribe via" 
+                        a href=(format!("{}/calendar/feed.xml", config().BASE_URL)) style="padding-left: 12px" {
+                            img src="https://upload.wikimedia.org/wikipedia/commons/thumb/4/43/Feed-icon.svg/128px-Feed-icon.svg.png" height="32px" width="32px" alt="rss icon";
+                        }
                     }
                 }
             }
@@ -28,10 +33,60 @@ pub fn index() -> Markup {
                 div class="flex items-center flex-wrap mb-20" {
                     div class="w-full md:w-1/2" {
                         h4 class="text-3xl text-gray-800 font-bold mb-3" {
-                            "Sign up"
+                            "Subscribe to the feed"
                         }
-                        p class="text-gray-600 mb-8" {
-                            "The only information we need from you is your email address."
+                        div class="text-gray-600 mb-8" {
+                            p {
+                                "The only thing you must do is install an RSS app and add the " 
+                                span class="text-blue-600 visited:text-purple-600" { (format!("{}/calendar/feed.xml", config().BASE_URL)) }
+                                " feed."
+                            }
+                            br;
+                            p { "Example RSS apps:" }
+                            p {
+                                b {"Android:" }
+                                ul class="list-disc" {
+                                    li {
+                                        a class="text-blue-600 visited:text-purple-600" href="https://play.google.com/store/apps/details?id=com.nononsenseapps.feeder.play&hl=en_CA" target="_blank" { "Feeder" }
+                                    }
+                                    li {
+                                        a class="text-blue-600 visited:text-purple-600" href="https://play.google.com/store/apps/details?id=com.innologica.inoreader&hl=en_CA&pli=1" target="_blank" { "Inoreader" }
+                                    }
+                                }
+                            }
+                            br;
+                            p {
+                                b {"iOS:" }
+                                ul class="list-disc" {
+                                    li {
+                                        a class="text-blue-600 visited:text-purple-600" href="http://www.rssowl.org/" target="_blank" { "RSSOwl" }
+                                    }
+                                }
+                            }
+                            br;
+                            p {
+                                b {"Linux:" } 
+                                ul class="list-disc" {
+                                    li {
+                                        a class="text-blue-600 visited:text-purple-600" href="https://gfeeds.gabmus.org/" target="_blank" { "GNOME Feeds" }
+                                    }
+                                    li {
+                                        a class="text-blue-600 visited:text-purple-600" href="http://www.rssowl.org/" target="_blank" { "RSSOwl" }
+                                    }
+                                }
+                            }
+                            br;
+                            p {
+                                b {"Windows:" }
+                                ul class="list-disc" {
+                                    li {
+                                        a class="text-blue-600 visited:text-purple-600" href="http://feedreader.com/" target="_blank" { "Feedreader" }
+                                    }
+                                    li {
+                                        a class="text-blue-600 visited:text-purple-600" href="http://www.rssowl.org/" target="_blank" { "RSSOwl" }
+                                    }
+                                }
+                            }
                         }
                     }
                     div class="w-full md:w-1/2" {
@@ -47,7 +102,7 @@ pub fn index() -> Markup {
                             "Continue hustling"
                         }
                         p class="text-gray-600 mb-8" {
-                            "Missing metal album releases is now a thing of the past because our service notifies you by email you whenever a band releases an album."
+                            "Missing metal album releases is now a thing of the past because your RSS app will notify you whenever a band releases an album."
                         }
                     }
                 }
@@ -58,7 +113,7 @@ pub fn index() -> Markup {
                         "Important Tips"
                     }
                     div class="flex flex-wrap" {
-                        div class="w-full md:w-1/3 px-2 mb-4" {
+                        div class="w-full md:w-1/2 px-2 mb-4" {
                             div class="bg-white rounded shadow py-2" {
                                 p class="text-gray-800 text-base px-6 mb-5" {
                                     "We pull our information straight from Wikipedia's authoritative"
@@ -67,21 +122,13 @@ pub fn index() -> Markup {
                                 }
                             }
                         }
-                        div class="w-full md:w-1/3 px-2 mb-4" {
+                        div class="w-full md:w-1/2 px-2 mb-4" {
                             div class="bg-white rounded shadow py-2" {
                                 p class="text-gray-800 text-base px-6 mb-5" {
                                     "Just like how metal bands rely on brutal riffs and bone-crushing drum beats to create "
                                     "their music, they also rely on the support of their fans to keep the metal scene alive. "
                                     "Don't be afraid to throw down some cash and show off your metal pride. Your support could "
                                     "be the one that fuels their next epic album or tour. Horns up, metalheads! \\m/"
-                                }
-                            }
-                        }
-                        div class="w-full md:w-1/3 px-2 mb-4" {
-                            div class="bg-white rounded shadow py-2" {
-                                p class="text-gray-800 text-base px-6 mb-5" {
-                                    "Sometimes email alerts can get caught in spam filters, so it's important to check your "
-                                    "spam folder regularly to make sure that you're not missing any important notifications."
                                 }
                             }
                         }
@@ -96,8 +143,11 @@ pub fn index() -> Markup {
                     h3 class="mt-4 mb-6 text-2xl text-white" {
                         "Keep track of the latest heavy metal album releases with our notifier, and never lose your headbanging rhythm again!"
                     }
-                    a href="/start" class="bg-white font-bold rounded-full mt-6 py-4 px-8 shadow-lg uppercase tracking-wider" {
-                        "Start Now"
+                    p href="/start" class="flex bg-white font-bold rounded-full py-4 px-8 shadow-lg uppercase tracking-wider" {
+                        "Subscribe via" 
+                        a href=(format!("{}/calendar/feed.xml", config().BASE_URL)) style="padding-left: 12px" {
+                            img src="https://upload.wikimedia.org/wikipedia/commons/thumb/4/43/Feed-icon.svg/128px-Feed-icon.svg.png" height="32px" width="32px" alt="rss icon";
+                        }
                     }
                 }
             }

@@ -13,13 +13,17 @@ pub fn config() -> &'static Config {
 
 #[allow(non_snake_case)]
 pub struct Config {
+    pub BASE_URL: String,
     pub DATABASE_URL: String,
+    pub IS_PROD: bool,
 }
 
 impl Config {
     pub fn load_from_env() -> Result<Self> {
         Ok(Self {
+            BASE_URL: get_env("BASE_URL")?,
             DATABASE_URL: get_env("DATABASE_URL")?,
+            IS_PROD: get_env("IS_PROD")? == "true",
         })
     }
 }

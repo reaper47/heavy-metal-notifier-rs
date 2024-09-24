@@ -4,11 +4,12 @@ use rss::{Channel, ChannelBuilder, Guid, Item, ItemBuilder};
 use time::OffsetDateTime;
 use tracing::error;
 
+use crate::config::config;
 use crate::error::Result;
 use crate::model::{CalendarBmc, FeedBmc, FeedForCreate};
 
 pub fn routes_calendar() -> Router {
-    Router::new().route("/feed", get(feed))
+    Router::new().route("/feed.xml", get(feed))
 }
 
 async fn feed() -> impl IntoResponse {
@@ -47,6 +48,10 @@ async fn feed() -> impl IntoResponse {
                 })
                 .collect::<Vec<Item>>();
 
+            let image = rss::ImageBuilder::default()
+                .link(format!("{}/static/favicon.png", config().BASE_URL))
+                .build();
+
             let channel = match feeds.get(0) {
                 Some(feed) => {
                     if feed.date == date_int {
@@ -55,12 +60,15 @@ async fn feed() -> impl IntoResponse {
                             .description("A feed for the latest heavy metal album releases.")
                             .pub_date(pub_date)
                             .link("/feed")
+                            .image(image)
                             .items(items)
                             .build()
                     } else {
                         match create_new_feed(pub_date.clone(), date, date_int) {
                             Ok(channel) => {
-                                items.insert(0, channel.items.get(0).unwrap().clone());
+                                if let Some(item) = channel.items.get(0) {
+                                    items.insert(0, item.clone());
+                                }
 
                                 ChannelBuilder::default()
                                     .title("Heavy Metal Releases")
@@ -69,6 +77,7 @@ async fn feed() -> impl IntoResponse {
                                     )
                                     .pub_date(pub_date)
                                     .link("/feed")
+                                    .image(image)
                                     .items(items)
                                     .build()
                             }
@@ -88,7 +97,7 @@ async fn feed() -> impl IntoResponse {
                 },
             };
 
-            ([(CONTENT_TYPE, "application/rss+xml")], channel.to_string()).into_response()
+            ([(CONTENT_TYPE, "text/xml;charset=UTF-8")], channel.to_string()).into_response()
         }
         Err(err) => {
             error!(
