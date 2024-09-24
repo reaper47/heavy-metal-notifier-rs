@@ -15,7 +15,7 @@ pub fn index() -> Markup {
                     h2 class="text-4xl font-bold mb-2 text-white" {
                         "Are you tired of missing out on your favorite heavy metal bands' latest album releases due to life's busyness?"
                     }
-                    h3 class="text-2xl mb-8 text-gray-200" {
+                    h3 class="text-2xl mb-8" {
                         "Never miss a headbang-worthy album again. Stay in tune with our band release notifier!"
                     }
                     p href="/start" class="flex bg-white font-bold rounded-full py-4 px-8 shadow-lg uppercase tracking-wider" {
@@ -27,15 +27,15 @@ pub fn index() -> Markup {
                 }
             }
             section class="col-span-12 container mx-auto px-6 p-10" {
-                h2 class="text-4xl font-bold text-center text-gray-800 mb-8" {
+                h2 class="text-4xl font-bold text-center  mb-8" {
                     "How it works"
                 }
                 div class="flex items-center flex-wrap mb-20" {
                     div class="w-full md:w-1/2" {
-                        h4 class="text-3xl text-gray-800 font-bold mb-3" {
+                        h4 class="text-3xl  font-bold mb-3" {
                             "Subscribe to the feed"
                         }
-                        div class="text-gray-600 mb-8" {
+                        div class="mb-8" {
                             p {
                                 "The only thing you must do is install an RSS app and add the "
                                 span class="text-blue-600 visited:text-purple-600" { (format!("{}/calendar/feed.xml", config().BASE_URL)) }
@@ -98,10 +98,10 @@ pub fn index() -> Markup {
                         img src="/static/img/guitarist.jpg" alt="Reporting";
                     }
                     div class="w-full md:w-1/2 pl-10" {
-                        h4 class="text-3xl text-gray-800 font-bold mb-3" {
+                        h4 class="text-3xl  font-bold mb-3" {
                             "Continue hustling"
                         }
-                        p class="text-gray-600 mb-8" {
+                        p class="mb-8" {
                             "Missing metal album releases is now a thing of the past because your RSS app will notify you whenever a band releases an album."
                         }
                     }
@@ -109,13 +109,13 @@ pub fn index() -> Markup {
             }
             section class="col-span-12 bg-gray-100" {
                 div class="container mx-auto px-6 py-20" {
-                    h2 class="text-4xl font-bold text-center text-gray-800 mb-8" {
+                    h2 class="text-4xl font-bold text-center  mb-8" {
                         "Important Tips"
                     }
                     div class="flex flex-wrap" {
                         div class="w-full md:w-1/2 px-2 mb-4" {
                             div class="bg-white rounded shadow py-2" {
-                                p class="text-gray-800 text-base px-6 mb-5" {
+                                p class="text-base px-6 mb-5" {
                                     "We pull our information straight from Wikipedia's authoritative"
                                     (PreEscaped("<a href=\"https://en.wikipedia.org/wiki/2024_in_heavy_metal_music\" target=\"_blank\" class=\"text-red-500 hover:text-red-700\"> metal album release page</a>"))
                                     ", so you can be sure you're getting accurate and up-to-date info. Never miss out on a killer album drop again!"
@@ -124,7 +124,7 @@ pub fn index() -> Markup {
                         }
                         div class="w-full md:w-1/2 px-2 mb-4" {
                             div class="bg-white rounded shadow py-2" {
-                                p class="text-gray-800 text-base px-6 mb-5" {
+                                p class="text-base px-6 mb-5" {
                                     "Just like how metal bands rely on brutal riffs and bone-crushing drum beats to create "
                                     "their music, they also rely on the support of their fans to keep the metal scene alive. "
                                     "Don't be afraid to throw down some cash and show off your metal pride. Your support could "
@@ -165,15 +165,15 @@ pub fn about() -> Markup {
             section class="col-span-12 container mx-auto px-6 p-10" {
                 div class="flex items-center flex-wrap mb-20" {
                     div class="w-full md:w-1/2" {
-                        h4 class="text-3xl text-gray-800 font-bold mb-3" {
+                        h4 class="text-3xl  font-bold mb-3" {
                             "About us"
                         }
-                        p class="text-gray-600 mb-8" {
+                        p class="mb-8" {
                             "At Heavy Metal Releases Notifier, we know that heavy metal fans are always on the hunt for the latest "
                             "and greatest albums of the day, month and year. That's why we created a service that notifies you "
                             "when new heavy metal band albums are released."
                         }
-                        p class="text-gray-600 mb-8" {
+                        p class="mb-8" {
                             "Our service is fully open source and available on "
                             (PreEscaped("<a href=\"https://github.com/reaper47/heavy-metal-notifier\" target=\"_blank\" class=\"text-blue-500 hover:text-blue-800\">GitHub</a>"))
                             ". We believe in the power of community and collaboration, and we invite you to join us in improving and expanding our "
@@ -199,10 +199,10 @@ pub fn contact(is_message_sent: bool) -> Markup {
             section class="col-span-12 container mx-auto px-6 p-10" {
                 div class="flex items-center flex-wrap mb-20" {
                     div class="w-full md:w-1/2" {
-                        h4 class="text-3xl text-gray-800 font-bold mb-3" {
+                        h4 class="text-3xl  font-bold mb-3" {
                             "Contact us"
                         }
-                        p class="text-gray-600 mb-4" {
+                        p class="mb-4" {
                             "To address any inquiries, please send a message to us directly from the form below."
                         }
                         form class="w-full md:w-3/4 bg-white p-6 rounded-lg shadow-md mb-8" method="post" action="/contact" {
@@ -261,80 +261,80 @@ pub fn privacy() -> Markup {
             section class="col-span-12 container mx-auto px-6 p-10" {
                 div class="flex items-center flex-wrap mb-20" {
                     div class="w-full md:w-1/2" {
-                        h4 class="text-3xl text-gray-800 font-bold mb-3" {
+                        h4 class="text-3xl  font-bold mb-3" {
                             "Privacy Policy"
                         }
-                        p class="text-gray-600 mb-8" {
+                        p class="mb-8" {
                             "At Heavy Metal Releases Notifier, your privacy is important to us. Our service is designed to "
                             "provide a secure and efficient experience for our users, and we take the protection of your personal "
                             "information seriously."
                         }
-                        h5 class="text-3xl text-gray-800 font-bold mb-3" {
+                        h5 class="text-3xl  font-bold mb-3" {
                             "Information Collection and Use"
                         }
-                        p class="text-gray-600 mb-8" {
+                        p class="mb-8" {
                             "We only collect the email address of the user who registers for our service. We do not collect "
                             "any other personal information and do not use any data analytics services. The personal data is "
                             "only processed on our servers and is not transferred outside the EU."
                         }
-                        h5 class="text-3xl text-gray-800 font-bold mb-3" {
+                        h5 class="text-3xl  font-bold mb-3" {
                             "Data Retention"
                         }
-                        p class="text-gray-600 mb-8" {
+                        p class="mb-8" {
                             "Your data is deleted from the live database when you stop using our service. You can do so by clicking "
                             "the unsubscribe button at the bottom of one of our emails. Until then, your data is kept indefinitely."
                         }
-                        h5 class="text-3xl text-gray-800 font-bold mb-3" {
+                        h5 class="text-3xl  font-bold mb-3" {
                             "Cookies"
                         }
-                        p class="text-gray-600 mb-8" {
+                        p class="mb-8" {
                             "We want to assure our users that we do not use any type of cookies on our website, including "
                             "third-party cookies. This means that we do not collect or store any information about our users' "
                             "browsing habits or use of the website. We are cookie-free and do not engage in any tracking "
                             "or advertising activities that may compromise our users' privacy."
                         }
-                        h5 class="text-3xl text-gray-800 font-bold mb-3" {
+                        h5 class="text-3xl  font-bold mb-3" {
                             "Third-Party Services"
                         }
-                        p class="text-gray-600 mb-8" {
+                        p class="mb-8" {
                             "We do not use any third-party services that may access or collect your personal information."
                         }
-                        h5 class="text-3xl text-gray-800 font-bold mb-3" {
+                        h5 class="text-3xl  font-bold mb-3" {
                             "Your Rights"
                         }
-                        p class="text-gray-600 mb-8" {
+                        p class="mb-8" {
                             "As a user of our service, you have the right to access, rectify, and delete your personal "
                             "information. You also have the right to object to processing, request a restriction of processing, "
                             "and request the transfer of your personal information to another controller. If you would like "
                             "to exercise these rights, please contact us."
                         }
-                        h5 class="text-3xl text-gray-800 font-bold mb-3" {
+                        h5 class="text-3xl  font-bold mb-3" {
                             "Automated Decision-Making"
                         }
-                        p class="text-gray-600 mb-8" {
+                        p class="mb-8" {
                             "We do not use automated decision-making."
                         }
-                        h5 class="text-3xl text-gray-800 font-bold mb-3" {
+                        h5 class="text-3xl  font-bold mb-3" {
                             "Data Sources"
                         }
-                        p class="text-gray-600 mb-8" {
+                        p class="mb-8" {
                             "We do not receive data from any other organization. All data is collected directly from the user."
                         }
-                        h5 class="text-3xl text-gray-800 font-bold mb-3" {
+                        h5 class="text-3xl  font-bold mb-3" {
                             "Data Obligation"
                         }
-                        p class="text-gray-600 mb-8" {
+                        p class="mb-8" {
                             "The customer is obliged to provide us with their email address for communication purposes. He or "
                             "she is not obligeide any other personal information to us."
                         }
-                        h5 class="text-3xl text-gray-800 font-bold mb-3" {
+                        h5 class="text-3xl  font-bold mb-3" {
                             "Where to File a Complaint"
                         }
-                        p class="text-gray-600 mb-8" {
+                        p class="mb-8" {
                             "If you have any concerns about the way we handle your personal information, you may file a "
                             "complaint witt supervisory authority."
                         }
-                        p class="text-gray-600" {
+                        p class="" {
                             "Thank you for using Heavy Metal Releases Notifier."
                         }
                     }
@@ -357,23 +357,23 @@ pub fn tos() -> Markup {
             section class="col-span-12 container mx-auto px-6 p-10" {
                 div class="flex items-center flex-wrap mb-20" {
                     div class="w-full md:w-1/2" {
-                        h4 class="text-3xl text-gray-800 font-bold mb-3" {
+                        h4 class="text-3xl  font-bold mb-3" {
                             "Terms of Service"
                         }
-                        p class="text-gray-600 mb-8" {
+                        p class="mb-8" {
                             "Please read through our Terms of Service carefully before using our service."
                         }
-                        h5 class="text-3xl text-gray-800 font-bold mb-3" {
+                        h5 class="text-3xl  font-bold mb-3" {
                             "Scope of Service"
                         }
-                        p class="text-gray-600 mb-8" {
+                        p class="mb-8" {
                             "The website, Heavy Metal Releases Notifier, offers a service to automatically notify you of new heavy metal "
                             "album releases throughout the current year. The user will be notified by email on new releases."
                         }
-                        h5 class="text-3xl text-gray-800 font-bold mb-3" {
+                        h5 class="text-3xl  font-bold mb-3" {
                             "Intellectual Property Rights"
                         }
-                        p class="text-gray-600 mb-8" {
+                        p class="mb-8" {
                             "The user is free to use this program for whatever reason because it is licensed under the MIT license. "
                             "The user acknowledges that any content submitted or transferred to the website becomes the property of "
                             "the one who hosts an instance of Heavy Metal Releases Notifier and may be used for any lawful purpose "
@@ -384,19 +384,19 @@ pub fn tos() -> Markup {
                             (PreEscaped("<a href=\"https://commons.wikimedia.org/wiki/Main_Page\">Wikimedia Commons</a>"))
                             "."
                         }
-                        h5 class="text-3xl text-gray-800 font-bold mb-3" {
+                        h5 class="text-3xl  font-bold mb-3" {
                             "User Conduct"
                         }
-                        p class="text-gray-600 mb-8" {
+                        p class="mb-8" {
                             "The user must respect basic human interactions when using the website or contacting support. "
                             "This includes not using offensive language, making personal attacks, or engaging in any behavior "
                             "that may be considered harassing or threatening. Heavy Metal Releases Notifier reserves the right to "
                             "terminate the user's account if they violate these terms of conduct."
                         }
-                        h5 class="text-3xl text-gray-800 font-bold mb-3" {
+                        h5 class="text-3xl  font-bold mb-3" {
                             "Disclaimer of Warranties"
                         }
-                        p class="text-gray-600 mb-8" {
+                        p class="mb-8" {
                             "The website is provided on an \"as is\" and \"as available\" basis. Heavy Metal Releases Notifier makes no "
                             "representations or warranties of any kind, express or implied, as to the operation of the website "
                             "or the information, content, materials, or products included on the website. The user acknowledges "
@@ -404,43 +404,43 @@ pub fn tos() -> Markup {
                             "the website will be uninterrupted or error-free, and Heavy Metal Releases Notifier will not be liable "
                             "for any interruptions or errors."
                         }
-                        h5 class="text-3xl text-gray-800 font-bold mb-3" {
+                        h5 class="text-3xl  font-bold mb-3" {
                             "Limitation of Liability"
                         }
-                        p class="text-gray-600 mb-8" {
+                        p class="mb-8" {
                             "Heavy Metal Releases Notifier is not responsible for any missed headbanging to the newest heavy metal "
                             "releases. The user acknowledges that Heavy Metal Releases Notifier will not be liable for any damages "
                             "of any kind arising from the use of the website and from excessive headbanging."
                         }
-                        h5 class="text-3xl text-gray-800 font-bold mb-3" {
+                        h5 class="text-3xl  font-bold mb-3" {
                             "Disputes"
                         }
-                        p class="text-gray-600 mb-8" {
+                        p class="mb-8" {
                             "Any dispute arising from the use of this website or its services will be governed by the laws of "
                             "the jurisdiction in which Heavy Metal Releases Notifier is located. The user agrees to submit to the "
                             "jurisdiction of the courts in that jurisdiction for resolution of any such dispute."
                         }
-                        h5 class="text-3xl text-gray-800 font-bold mb-3" {
+                        h5 class="text-3xl  font-bold mb-3" {
                             "Changes to the TOS"
                         }
-                        p class="text-gray-600 mb-8" {
+                        p class="mb-8" {
                             "Heavy Metal Releases Notifier reserves the right to modify these terms of service at any time. Any changes "
                             "will be communicated to users through the website. The user's continued use of the website following "
                             "any changes to the TOS constitutes acceptance of those changes."
                         }
-                        h5 class="text-3xl text-gray-800 font-bold mb-3" {
+                        h5 class="text-3xl  font-bold mb-3" {
                             "Governing Law"
                         }
-                        p class="text-gray-600 mb-8" {
+                        p class="mb-8" {
                             "This Terms of Service agreement and the relationship between the user and Heavy Metal Releases Notifier "
                             "shall be governed by and construed in accordance with the laws of heavy metal. The user "
                             "agrees to submit to the jurisdiction of the courts located in Heaven for any and all "
                             "disputes arising from or related to the use of the website and its services."
                         }
-                        h5 class="text-3xl text-gray-800 font-bold mb-3" {
+                        h5 class="text-3xl  font-bold mb-3" {
                             "Contact Information"
                         }
-                        p class="text-gray-600 mb-8" {
+                        p class="mb-8" {
                             "If you have any questions or concerns regarding these Terms of Service agreement, please contact Heavy Metal Releases Notifier at "
                             (PreEscaped("<a href=\"mailto:metal.releases.666@gmail.com\" target=\"_blank\" class=\"text-blue-500 hover:text-blue-600\" aria-label=\"Email metal.releases.666@gmail.com\">metal.releases.666@gmail.com</a>"))
                             "."

@@ -73,25 +73,22 @@ impl CalendarBmc {
             for (month, data) in calendar.data.iter() {
                 for (day, releases) in data.iter() {
                     for release in releases.iter() {
+                        let artist_name = release.artist.clone();
+
                         let artist_id: i32 = match diesel::insert_or_ignore_into(artists::table)
-                            .values(artists::name.eq(release.artist.clone()))
+                            .values(artists::name.eq(&artist_name))
                             .returning(artists::id)
                             .get_result(conn)
                         {
                             Ok(id) => id,
                             Err(_) => artists::table
-                                .filter(artists::name.eq(release.artist.clone()))
+                                .filter(artists::name.eq(&artist_name))
                                 .limit(1)
                                 .select(artists::id)
                                 .get_result(conn)?,
                         };
 
-                        let links: Vec<Link> = links::table
-                            .filter(links::artist_id.eq(artist_id))
-                            .select(Link::as_select())
-                            .load(conn)?;
-
-                        if links.is_empty() {
+                        if CalendarBmc::get_links(conn, &artist_name).is_none() {
                             let mut link_for_insert = LinkForInsert {
                                 artist_id,
                                 url_youtube: String::new(),
@@ -129,6 +126,27 @@ impl CalendarBmc {
 
             Ok(())
         })
+    }
+
+    pub fn get_links(conn: &mut SqliteConnection ,artist: impl Into<String>) -> Option<Vec<Link>> {
+        use super::schema::*;
+
+        let links: core::result::Result<Vec<Link>, _> = links::table
+        .inner_join(artists::table)
+        .filter(artists::name.eq(artist.into()))
+        .select(Link::as_select())
+        .load(conn);
+
+        match links {
+            Ok(vec) => {
+                if vec.is_empty() {
+                    None
+                } else {
+                    Some(vec)
+                }
+            },
+            Err(_) => None
+        }
     }
 
     pub fn get() -> Result<Vec<(Release, Artist, (String, Option<String>))>> {
