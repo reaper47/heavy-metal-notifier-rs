@@ -2041,6 +2041,7 @@ mod tests {
 						Release::new("Impellitteri", "War Machine"),
 						Release::new("Make Them Suffer", "Make Them Suffer"),
 						Release::new("Massacre", "Necrolution"),
+						Release::new("Paragon", "Metalation"),
 						Release::new("Paysage d'Hiver", "Die Berge"),
 						Release::new("Seven Kingdoms", "The Square (EP)"),
 						Release::new("Sólstafir", "Hin Helga Kvöl"),
