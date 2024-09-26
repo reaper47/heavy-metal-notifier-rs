@@ -3,7 +3,11 @@ use std::collections::HashMap;
 use reqwest::Url;
 use time::Month;
 
-use crate::{config::config, model::{CalendarBmc, ModelManager}, scraper::client::Client};
+use crate::{
+    config::config,
+    model::{CalendarBmc, ModelManager},
+    scraper::client::Client,
+};
 
 pub type CalendarData = HashMap<Month, Releases>;
 
@@ -36,22 +40,22 @@ impl Release {
     pub async fn generate_links(&mut self, client: &impl Client) {
         let mm = &mut ModelManager::new();
         let conn = &mut mm.conn;
-       
+
         if CalendarBmc::get_links(conn, &self.artist).is_none() {
             let query = format!("{} {} full album", self.artist, self.album);
             let mut query_encoded = String::new();
             url_escape::encode_query_to_string(query, &mut query_encoded);
-    
+
             let yt_url = format!("https://www.youtube.com/results?search_query={query_encoded}");
             let yt_url = Url::parse(&yt_url).unwrap();
-    
+
             self.links.push(Link::Youtube(yt_url));
             if config().IS_PROD {
                 if let Some(url) = client.get_bandcamp_link(self.artist.clone()).await {
                     self.links.push(Link::Bandcamp(url))
                 }
             }
-        }        
+        }
     }
 }
 

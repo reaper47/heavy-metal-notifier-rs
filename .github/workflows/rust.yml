@@ -11,12 +11,18 @@ env:
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
 
     steps:
     - uses: actions/checkout@v4
+
+    - name: Cache Dependencies
+      uses: Swatinem/rust-cache@v2
+      with:
+        key: stable
+
     - name: Build
-      run: cargo build --verbose
+      run: cargo build
+
     - name: Run tests
-      run: cargo test --verbose
+      run: cargo test -- --nocapture --quiet

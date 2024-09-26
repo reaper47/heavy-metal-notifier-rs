@@ -4,12 +4,3 @@ tasks:
     cmds:
       - cmd: npm --prefix ./web/app install ./web/app
       - cmd: npm --prefix ./web/app run build
-
-  release:
-    deps:
-      - test
-    requires:
-      vars: [ tag ]
-    cmds:
-      - go run ./releases/main.go -package github.com/reaper47/recipya -tag {{.tag}}
-      - gh release create {{.tag}} ./releases/{{.tag}}/*
