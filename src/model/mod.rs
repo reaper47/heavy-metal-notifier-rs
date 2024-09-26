@@ -1,3 +1,5 @@
+//! The `model` module implements the building blocks of the repository.
+
 mod calendar;
 mod feed;
 mod store;
@@ -11,7 +13,9 @@ use diesel::prelude::*;
 use crate::config::config;
 use store::establish_connection;
 
+/// `ModelManager` is a structure responsible for managing database interactions.
 pub struct ModelManager {
+    /// The connection to the SQLite database.
     pub conn: SqliteConnection,
 }
 

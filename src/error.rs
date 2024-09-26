@@ -1,8 +1,10 @@
 use derive_more::derive::From;
 
+/// Heavy Metal Notifier main Result type alias (with heavy_metal_notifier::Error).
 #[allow(unused)]
 pub type Result<T> = core::result::Result<T, Error>;
 
+/// Heavy Metal Notifier main error.
 #[allow(unused)]
 #[derive(Debug, From)]
 pub enum Error {

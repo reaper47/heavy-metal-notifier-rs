@@ -21,7 +21,7 @@ async fn main() -> Result<()> {
     sched
         .add(
             // At 12:00 AM, on day 1 of the month
-            Job::new_async("0 0 0 1 * * *", |_uuid, _l| {
+            Job::new_async("0 0 0 1,15 * * *", |_uuid, _l| {
                 Box::pin(async move {
                     info!("Updating calendar");
                     if let Err(err) = jobs::update_calendar().await {

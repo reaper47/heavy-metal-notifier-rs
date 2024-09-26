@@ -2042,6 +2042,7 @@ mod tests {
 						Release::new("Make Them Suffer", "Make Them Suffer"),
 						Release::new("Massacre", "Necrolution"),
 						Release::new("Paysage d'Hiver", "Die Berge"),
+						Release::new("Seven Kingdoms", "The Square (EP)"),
 						Release::new("Sólstafir", "Hin Helga Kvöl"),
 					]),
 					(15, vec![
@@ -2049,6 +2050,7 @@ mod tests {
 						Release::new("The Foreshadowing", "New Wave Order"),
 						Release::new("Linkin Park", "From Zero"),
 						Release::new("Poppy", "Negative Spaces"),
+						Release::new("Thanatos", "Four Decades of Death (compilation album)"),
 						Release::new("Thy Catafalque", "XII: A Gyönyörü Álmok Ezután Jönnek"),
 					]),
 					(22, vec![

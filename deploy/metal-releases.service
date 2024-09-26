@@ -1,0 +1,12 @@
+[Unit]
+Description=Heavy Metal Notifier Service
+Wants=network.target
+
+[Service]
+ExecStart=/path/to/heavy-metal-notifier/heavy-metal-notifier
+EnvironmentFile=/path/to/heavy-metal-notifier/.env
+WorkingDirectory=/path/to/metal/heavy-metal-notifier/
+
+
+[Install]
+WantedBy=multi-user.target

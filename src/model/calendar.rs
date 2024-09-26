@@ -6,6 +6,9 @@ use crate::error::{Error, Result};
 
 use super::ModelManager;
 
+/// This struct corresponds to a row in the `artists` 
+/// table in the database. Each artist has a unique `id` and 
+/// a `name`.
 #[derive(Queryable, Identifiable, Selectable, Debug, PartialEq)]
 #[diesel(table_name = super::schema::artists)]
 #[diesel(check_for_backend(diesel::sqlite::Sqlite))]
@@ -14,6 +17,12 @@ pub struct Artist {
     pub name: String,
 }
 
+
+/// Represents web links associated with an artist.
+/// 
+/// This struct corresponds to a row in the `links` table, 
+/// which stores external links related to the artist 
+/// (such as YouTube and Bandcamp).
 #[derive(Queryable, Selectable, Identifiable, Associations, Debug, PartialEq)]
 #[diesel(belongs_to(Artist))]
 #[diesel(table_name = super::schema::links)]
@@ -33,6 +42,12 @@ struct LinkForInsert {
     url_bandcamp: Option<String>,
 }
 
+/// Represents a music release by an artist.
+///
+/// This struct corresponds to a row in the `releases` table.
+/// It stores information about an artist's album release, 
+/// including the release date (year, month, day) and the album's 
+/// title.
 #[derive(Queryable, Identifiable, Selectable, Associations, Debug, PartialEq)]
 #[diesel(belongs_to(Artist))]
 #[diesel(table_name = super::schema::releases)]
@@ -47,6 +62,10 @@ pub struct Release {
     pub album: String,
 }
 
+/// Represents a new release to be inserted into the database.
+///
+/// This struct is used when creating new records in the `releases` table. 
+/// It doesn't include the `id` field because the database will generate it.
 #[derive(Insertable, Associations)]
 #[diesel(belongs_to(Artist))]
 #[diesel(table_name = super::schema::releases)]
@@ -58,9 +77,19 @@ struct ReleaseForInsert {
     pub album: String,
 }
 
+/// `CalendarBmc` is a backend model controller responsible for 
+/// managing calendar-related operations.
+///
+/// It provides methods to create, update, and retrieve calendar 
+/// data, including releases and associated links.
 pub struct CalendarBmc;
 
 impl CalendarBmc {
+    /// Creates or updates a calendar with the provided data.
+    ///
+    /// This method inserts new releases into the `releases` table
+    /// or updates existing ones based on the calendar data. It 
+    /// handles linking artists and adding external links (YouTube, Bandcamp).
     pub fn create_or_update(calendar: Calendar) -> Result<()> {
         use super::schema::*;
 
@@ -128,14 +157,18 @@ impl CalendarBmc {
         })
     }
 
-    pub fn get_links(conn: &mut SqliteConnection ,artist: impl Into<String>) -> Option<Vec<Link>> {
+    /// Retrieves links associated with an artist.
+    ///
+    /// This method queries the `links` table to fetch YouTube 
+    /// and Bandcamp URLs associated with a given artist.
+    pub fn get_links(conn: &mut SqliteConnection, artist: impl Into<String>) -> Option<Vec<Link>> {
         use super::schema::*;
 
         let links: core::result::Result<Vec<Link>, _> = links::table
-        .inner_join(artists::table)
-        .filter(artists::name.eq(artist.into()))
-        .select(Link::as_select())
-        .load(conn);
+            .inner_join(artists::table)
+            .filter(artists::name.eq(artist.into()))
+            .select(Link::as_select())
+            .load(conn);
 
         match links {
             Ok(vec) => {
@@ -144,11 +177,16 @@ impl CalendarBmc {
                 } else {
                     Some(vec)
                 }
-            },
-            Err(_) => None
+            }
+            Err(_) => None,
         }
     }
 
+    /// Retrieves releases for the current date.
+    ///
+    /// This method fetches releases from the `releases` table 
+    /// that match the current date (year, month, and day) and 
+    /// joins the associated artist and links (YouTube, Bandcamp).
     pub fn get() -> Result<Vec<(Release, Artist, (String, Option<String>))>> {
         use super::schema::*;
 

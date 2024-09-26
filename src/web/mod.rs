@@ -1,3 +1,5 @@
+//! The `web` module exposes the handlers for the web server.
+
 mod config;
 mod handlers_calendar;
 mod handlers_general;
@@ -10,6 +12,7 @@ use config::web_config;
 use handlers_calendar::routes_calendar;
 use handlers_general::{routes_general, serve_dir};
 
+/// Creates the Router for the web server.
 pub async fn routes() -> Result<Router> {
     let router = Router::new()
         .merge(routes_general())
