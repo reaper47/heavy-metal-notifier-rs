@@ -11,7 +11,7 @@ jobs:
     outputs:
       numCommits: ${{ steps.numCommits.outputs.commits }}
     steps:
-      - uses: action/checkout@v4
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 0
       - name: Get new commits
