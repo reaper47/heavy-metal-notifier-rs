@@ -2058,6 +2058,7 @@ mod tests {
 						Release::new("Body Count", "Merciless"),
 						Release::new("Dawn of Destiny", "IX"),
 						Release::new("Defeated Sanity", "Chronicles of Lunacy"),
+						Release::new("Marilyn Manson", "One Assassination Under God - Chapter 1"),
 						Release::new("Ocean Grove", "Oddworld"),
 						Release::new("Opeth", "The Last Will and Testament"),
 					]),
