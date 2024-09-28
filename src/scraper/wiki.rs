@@ -1062,6 +1062,7 @@ mod tests {
 						Release::new("As Everything Unfolds", "Ultraviolet"),
 						Release::new("Axel Rudi Pell", "The Ballads VI (compilation album)"),
 						Release::new("Bell Witch", "Future's Shadow Part 1: The Clandestine Gate"),
+						Release::new("Claymorean", "By This Sword We Rule: A Decade of Steel"),
 						Release::new("Dorthia Cottrell", "Death Folk Country"),
 						Release::new("Enter Shikari", "A Kiss for the Whole World"),
 						Release::new("Liv Kristine", "River of Diamonds"),
