@@ -2016,6 +2016,7 @@ mod tests {
 						Release::new("Better Lovers", "Highly Irresponsible"),
 						Release::new("Cane Hill", "A Piece of Me I Never Let You Find"),
 						Release::new("Devin Townsend", "PowerNerd"),
+						Release::new("dUg Pinnick", "Thingamajigger"),
 						Release::new("Entheos", "An End to Everything (EP)"),
 						Release::new("Fit for an Autopsy", "The Nothing That Is"),
 						Release::new("Hatchet", "Leave No Soul (EP)"),
