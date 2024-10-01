@@ -1968,6 +1968,7 @@ mod tests {
 						Release::new("Heriot", "Devoured by the Mouth of Hell"),
 						Release::new("Paul Di'Anno", "The Book of the Beast (compilation album)"),
 						Release::new("Rolo Tomassi", "Live at the Electric Ballroom (live album)"),
+						Release::new("Serj Tankian", "Foundations (EP)"),
 					]),
 				])),
 				(Month::October, Releases::from([
@@ -2050,6 +2051,7 @@ mod tests {
 					]),
 					(15, vec![
 						Release::new("As I Lay Dying", "Through Storms Ahead"),
+						Release::new("Empires of Eden", "Guardians of Time"),
 						Release::new("The Foreshadowing", "New Wave Order"),
 						Release::new("Linkin Park", "From Zero"),
 						Release::new("Poppy", "Negative Spaces"),

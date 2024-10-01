@@ -50,7 +50,7 @@ jobs:
         run: cargo test -- --nocapture --quiet
 
       - name: Build Docker image
-        run: docker build -t reaper99/heavy-metal-notifier:nightly .
+        run: docker build -t reaper99/heavy-metal-notifier:nightly . -f ./deploy/Dockerfile
 
       - name: Log in to DockerHub
         uses: docker/login-action@v3
