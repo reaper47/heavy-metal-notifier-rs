@@ -10,8 +10,8 @@ use crate::{
 
 use super::client::Client;
 
-pub async fn scrape(client: &impl Client, year: i32) -> Result<Calendar> {
-    let doc = client.get_calendar(year).await?;
+pub fn scrape(client: &impl Client, year: i32) -> Result<Calendar> {
+    let doc = client.get_calendar(year)?;
     Ok(extract_calendar(doc, year))
 }
 
@@ -133,11 +133,11 @@ mod tests {
 
     type Result<T> = core::result::Result<T, Box<dyn std::error::Error>>;
 
-    #[tokio::test]
-    async fn test_2022_calendar_ok() -> Result<()> {
+	#[test]
+    fn test_2022_calendar_ok() -> Result<()> {
         let client = MockClient::new();
 
-        let got = client.scrape(2022).await?;
+        let got = client.scrape(2022)?;
 
         let want = Calendar {
 			year: 2022,
@@ -857,11 +857,11 @@ mod tests {
         Ok(())
     }
 
-    #[tokio::test]
-    async fn test_2023_calendar_ok() -> Result<()> {
+	#[test]
+    fn test_2023_calendar_ok() -> Result<()> {
         let client = MockClient::new();
 
-        let got = client.scrape(2023).await?;
+        let got = client.scrape(2023)?;
 
         let want = Calendar {
 			year: 2023,
@@ -1490,11 +1490,11 @@ mod tests {
         Ok(())
     }
 
-    #[tokio::test]
-    async fn test_2024_calendar_ok() -> Result<()> {
+	#[test]
+    fn test_2024_calendar_ok() -> Result<()> {
         let client = MockClient::new();
 
-        let got = client.scrape(2024).await?;
+        let got = client.scrape(2024)?;
 
         let want = Calendar {
 			year: 2024,
@@ -2062,7 +2062,7 @@ mod tests {
 						Release::new("Body Count", "Merciless"),
 						Release::new("Dawn of Destiny", "IX"),
 						Release::new("Defeated Sanity", "Chronicles of Lunacy"),
-						Release::new("Marilyn Manson", "One Assassination Under God – Chapter 1"),
+						Release::new("Marilyn Manson", "One Assassination Under God - Chapter 1"),
 						Release::new("Ocean Grove", "Oddworld"),
 						Release::new("Opeth", "The Last Will and Testament"),
 					]),
@@ -2073,8 +2073,8 @@ mod tests {
         Ok(())
     }
 
-    #[tokio::test]
-    async fn test_2025_calendar_ok() -> Result<()> {
+	#[test]
+    fn test_2025_calendar_ok() -> Result<()> {
         Ok(())
     }
 

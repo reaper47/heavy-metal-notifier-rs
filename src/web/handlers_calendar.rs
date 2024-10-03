@@ -122,14 +122,14 @@ fn create_new_feed(pub_date: String, date: String, date_int: i32) -> Result<Chan
         Ok(releases) => {
             let content = releases.iter().fold(
                 "".to_string(),
-                |mut acc, (release, artist, (url_youtube, url_bandcamp))| {
+                |mut acc, (release, artist)| {
                     acc.push_str(&format!("{} - {}<br/>", artist.name, release.album));
 
                     acc.push_str(&format!(
                         "&emsp;• <a href=\"{}\">Youtube</a><br/>",
-                        url_youtube
+                        release.url_youtube
                     ));
-                    if let Some(url) = url_bandcamp {
+                    if let Some(url) = &artist.url_bandcamp {
                         acc.push_str(&format!("&emsp;• <a href=\"{}\">Bandcamp</a><br/>", url));
                     }
                     acc.push_str("<br/>");

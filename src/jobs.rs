@@ -12,8 +12,7 @@ use crate::{
 /// year and saves it in the database.
 pub async fn update_calendar() -> Result<()> {
     let client = MainClient::new();
-    let mut calendar = scrape(&client, OffsetDateTime::now_utc().year()).await?;
-    calendar.update_links(&client).await;
-    CalendarBmc::create_or_update(calendar)?;
+    let calendar = scrape(&client, OffsetDateTime::now_utc().year())?;
+    CalendarBmc::create_or_update(&client, calendar)?;
     Ok(())
 }

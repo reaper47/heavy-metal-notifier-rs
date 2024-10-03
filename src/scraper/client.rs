@@ -1,4 +1,3 @@
-use axum::async_trait;
 use reqwest::Url;
 use scraper::Html;
 
@@ -12,29 +11,27 @@ impl MainClient {
     }
 }
 
-#[async_trait]
 pub trait Client {
-    async fn get_calendar(&self, year: i32) -> Result<scraper::Html>;
-    async fn get_bandcamp_link(&self, artist: String) -> Option<Url>;
+    fn get_calendar(&self, year: i32) -> Result<scraper::Html>;
+    fn get_bandcamp_link(&self, artist: String) -> Option<Url>;
 }
 
-#[async_trait]
 impl Client for MainClient {
-    async fn get_calendar(&self, year: i32) -> Result<scraper::Html> {
+    fn get_calendar(&self, year: i32) -> Result<scraper::Html> {
         let url = format!("https://en.wikipedia.org/wiki/{year}_in_heavy_metal_music");
-        let res = reqwest::get(url).await?;
-        let text = res.text().await?;
+        let res = reqwest::blocking::get(url)?;
+        let text = res.text()?;
         Ok(Html::parse_document(text.as_str()))
     }
 
-    async fn get_bandcamp_link(&self, artist: String) -> Option<Url> {
+    fn get_bandcamp_link(&self, artist: String) -> Option<Url> {
         let artist = artist
             .to_lowercase()
             .replace(":", "")
             .split_whitespace()
             .collect::<String>();
         let url = format!("https://{artist}.bandcamp.com");
-        let res = match reqwest::get(&url).await {
+        let res = match reqwest::blocking::get(&url) {
             Ok(res) => {
                 let req_url = res.url().path();
                 let req_host = res.url().host_str().unwrap_or("");
@@ -68,25 +65,23 @@ pub mod tests {
             Self {}
         }
 
-        pub async fn scrape(&self, year: i32) -> Result<Calendar> {
-            scrape(self, year).await
+        pub fn scrape(&self, year: i32) -> Result<Calendar> {
+            scrape(self, year)
         }
     }
 
-    #[cfg(test)]
-    #[async_trait]
     impl Client for MockClient {
-        async fn get_calendar(&self, year: i32) -> Result<scraper::Html> {
+        fn get_calendar(&self, year: i32) -> Result<scraper::Html> {
             let path = PathBuf::from(format!("./tests/testdata/test_{year}.html"));
 
             let content = match fs::read_to_string(&path) {
                 Ok(content) => content,
                 Err(_) => {
                     let url = format!("https://en.wikipedia.org/wiki/{year}_in_heavy_metal_music");
-                    match reqwest::get(url).await {
+                    match reqwest::blocking::get(url) {
                         Ok(res) => {
                             let mut file = fs::File::create(path)?;
-                            let content = res.text().await?;
+                            let content = res.text()?;
                             if let Err(err) = file.write(&content.as_bytes()) {
                                 return Err(Error::Io(err));
                             }
@@ -100,7 +95,7 @@ pub mod tests {
             Ok(Html::parse_document(&content))
         }
 
-        async fn get_bandcamp_link(&self, artist: String) -> Option<Url> {
+        fn get_bandcamp_link(&self, artist: String) -> Option<Url> {
             let artist = artist
                 .to_lowercase()
                 .replace(":", "")
