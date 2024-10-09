@@ -8,8 +8,8 @@ use crate::scraper::client::Client;
 
 use super::ModelManager;
 
-/// This struct corresponds to a row in the `artists` 
-/// table in the database. Each artist has a unique `id` and 
+/// This struct corresponds to a row in the `artists`
+/// table in the database. Each artist has a unique `id` and
 /// a `name`.
 #[derive(Queryable, Identifiable, Selectable, Debug, PartialEq)]
 #[diesel(table_name = super::schema::artists)]
@@ -23,7 +23,7 @@ pub struct Artist {
 
 /// Represents a new artist to be inserted into the database.
 ///
-/// This struct is used when creating new records in the `artists` table. 
+/// This struct is used when creating new records in the `artists` table.
 /// It doesn't include the `id` field because the database will generate it.
 #[derive(Insertable)]
 #[diesel(table_name = super::schema::artists)]
@@ -59,8 +59,8 @@ impl ArtistForInsert {
 /// Represents a music release by an artist.
 ///
 /// This struct corresponds to a row in the `releases` table.
-/// It stores information about an artist's album release, 
-/// including the release date (year, month, day) and the album's 
+/// It stores information about an artist's album release,
+/// including the release date (year, month, day) and the album's
 /// title.
 #[derive(Queryable, Identifiable, Selectable, Associations, Debug, PartialEq)]
 #[diesel(belongs_to(Artist))]
@@ -79,7 +79,7 @@ pub struct Release {
 
 /// Represents a new release to be inserted into the database.
 ///
-/// This struct is used when creating new records in the `releases` table. 
+/// This struct is used when creating new records in the `releases` table.
 /// It doesn't include the `id` field because the database will generate it.
 #[derive(Insertable, Associations)]
 #[diesel(belongs_to(Artist))]
@@ -94,10 +94,10 @@ struct ReleaseForInsert {
     pub url_metallum: String,
 }
 
-/// `CalendarBmc` is a backend model controller responsible for 
+/// `CalendarBmc` is a backend model controller responsible for
 /// managing calendar-related operations.
 ///
-/// It provides methods to create, update, and retrieve calendar 
+/// It provides methods to create, update, and retrieve calendar
 /// data, including releases and associated links.
 pub struct CalendarBmc;
 
@@ -105,7 +105,7 @@ impl CalendarBmc {
     /// Creates or updates a calendar with the provided data.
     ///
     /// This method inserts new releases into the `releases` table
-    /// or updates existing ones based on the calendar data. It 
+    /// or updates existing ones based on the calendar data. It
     /// handles linking artists and adding external links (YouTube, Bandcamp).
     pub fn create_or_update(client: &impl Client, calendar: Calendar) -> Result<()> {
         use super::schema::*;
@@ -137,11 +137,14 @@ impl CalendarBmc {
                         let query = format!("{} {} full album", artist_name, release.album.clone());
                         let mut query_encoded = String::new();
                         url_escape::encode_query_to_string(query, &mut query_encoded);
-                        let url_youtube = format!("https://www.youtube.com/results?search_query={query_encoded}");
+                        let url_youtube =
+                            format!("https://www.youtube.com/results?search_query={query_encoded}");
 
                         let name_metallum = artist_name.replace(" ", "_");
                         let album_metallum = release.album.clone().replace(" ", "_");
-                        let url_metallum = format!("https://www.metal-archives.com/bands/{name_metallum}/{album_metallum}");
+                        let url_metallum = format!(
+                            "https://www.metal-archives.com/bands/{name_metallum}/{album_metallum}"
+                        );
 
                         diesel::insert_into(releases::table)
                             .values(&ReleaseForInsert {
@@ -164,8 +167,8 @@ impl CalendarBmc {
 
     /// Retrieves releases for the current date.
     ///
-    /// This method fetches releases from the `releases` table 
-    /// that match the current date (year, month, and day) and 
+    /// This method fetches releases from the `releases` table
+    /// that match the current date (year, month, and day) and
     /// joins the associated artist and links (YouTube, Bandcamp).
     pub fn get() -> Result<Vec<(Release, Artist)>> {
         use super::schema::*;

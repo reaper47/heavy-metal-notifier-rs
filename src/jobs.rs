@@ -8,7 +8,7 @@ use crate::{
     scraper::{client::MainClient, wiki::scrape},
 };
 
-/// Fetches, scrapes and updates the heavy metal calendar for the current 
+/// Fetches, scrapes and updates the heavy metal calendar for the current
 /// year and saves it in the database.
 pub async fn update_calendar() -> Result<()> {
     let client = MainClient::new();

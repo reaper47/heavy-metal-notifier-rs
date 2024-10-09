@@ -120,9 +120,9 @@ async fn feed() -> impl IntoResponse {
 fn create_new_feed(pub_date: String, date: String, date_int: i32) -> Result<Channel> {
     match CalendarBmc::get() {
         Ok(releases) => {
-            let content = releases.iter().fold(
-                "".to_string(),
-                |mut acc, (release, artist)| {
+            let content = releases
+                .iter()
+                .fold("".to_string(), |mut acc, (release, artist)| {
                     acc.push_str(&format!("{} - {}<br/>", artist.name, release.album));
 
                     acc.push_str(&format!(
@@ -135,8 +135,7 @@ fn create_new_feed(pub_date: String, date: String, date_int: i32) -> Result<Chan
                     acc.push_str("<br/>");
 
                     acc
-                },
-            );
+                });
 
             let channel = if content.is_empty() {
                 ChannelBuilder::default()

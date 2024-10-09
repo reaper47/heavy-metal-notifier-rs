@@ -128,12 +128,12 @@ mod tests {
 
     use crate::{
         calendar::{CalendarData, Releases},
-        scraper::client::tests::MockClient,
+        scraper::{client::tests::MockClient, test_utils::compare_calendars},
     };
 
     type Result<T> = core::result::Result<T, Box<dyn std::error::Error>>;
 
-	#[test]
+    #[test]
     fn test_2022_calendar_ok() -> Result<()> {
         let client = MockClient::new();
 
@@ -857,7 +857,7 @@ mod tests {
         Ok(())
     }
 
-	#[test]
+    #[test]
     fn test_2023_calendar_ok() -> Result<()> {
         let client = MockClient::new();
 
@@ -1489,7 +1489,7 @@ mod tests {
         Ok(())
     }
 
-	#[test]
+    #[test]
     fn test_2024_calendar_ok() -> Result<()> {
         let client = MockClient::new();
 
@@ -2078,31 +2078,8 @@ mod tests {
         Ok(())
     }
 
-	#[test]
+    #[test]
     fn test_2025_calendar_ok() -> Result<()> {
         Ok(())
-    }
-
-    fn compare_calendars(got: Calendar, want: Calendar) {
-        for (month, releases) in want.data.iter() {
-            match got.data.get(month) {
-                Some(got_releases) => {
-                    for (day, want_day) in releases.iter() {
-                        let got_day = match got_releases.get(day) {
-                            Some(day) => day,
-                            None => panic!("Missing day {:?} {day}", month),
-                        };
-                        pretty_assertions::assert_eq!(
-                            got_day,
-                            want_day,
-                            "month: {:?} - day: {}",
-                            month,
-                            day
-                        );
-                    }
-                }
-                None => panic!("should have had month `{:?}`", month),
-            }
-        }
     }
 }

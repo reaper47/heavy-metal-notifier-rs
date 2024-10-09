@@ -13,7 +13,6 @@ pub type Releases = HashMap<Day, Vec<Release>>;
 pub struct Release {
     pub artist: String,
     pub album: String,
-    pub links: Vec<Link>,
 }
 
 impl Release {
@@ -27,7 +26,6 @@ impl Release {
         Self {
             artist: artist.into(),
             album,
-            links: Vec::new(),
         }
     }
 }
