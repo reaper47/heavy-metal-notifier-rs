@@ -15,11 +15,7 @@ mod test_utils {
                             Some(day) => day,
                             None => panic!("Missing day {:?} {day}", month),
                         };
-                        pretty_assertions::assert_eq!(
-                            got_day,
-                            want_day,
-                            "{:?} {}", month, day
-                        );
+                        pretty_assertions::assert_eq!(got_day, want_day, "{:?} {}", month, day);
                     }
                 }
                 None => panic!("should have had month `{:?}`", month),
