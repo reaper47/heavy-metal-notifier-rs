@@ -1958,6 +1958,7 @@ mod tests {
 						Release::new("Nightwish", "Yesterwynde"),
 						Release::new("Seether", "The Surface Seems So Far"),
 						Release::new("Skid Row", "Live in London (live album)"),
+						Release::new("Unto Others", "Never, Neverland"),
 						Release::new("Vended", "Vended"),
 						Release::new("Vision Divine", "Blood and Angels' Tears"),
 						Release::new("Void of Vision", "What I'll Leave Behind"),
@@ -2026,6 +2027,7 @@ mod tests {
 						Release::new("Hatchet", "Leave No Soul (EP)"),
 						Release::new("Loudblast", "Altering Fates and Destinies"),
 						Release::new("Motörhead", "We Take No Prisoners (The Singles 1995–2006) (box set)"),
+						Release::new("Skinflint", "Baloi"),
 						Release::new("Turmion Kätilöt", "Reset"),
 					]),
 					(31, vec![

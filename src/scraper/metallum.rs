@@ -34,8 +34,7 @@ impl MetallumReleaseParts {
     fn from_release(release: Vec<String>) -> Result<Self> {
         let selector = Selector::parse("a").map_err(|_| Error::ScraperFail)?;
 
-        let artist_fragment: Html = Html::parse_fragment(release.get(0).ok_or(Error::NoItem)?);
-        let artists = artist_fragment
+        let artists = Html::parse_fragment(release.get(0).ok_or(Error::NoItem)?)
             .select(&selector)
             .map(|el| {
                 let artist = el.text().collect::<Vec<_>>().join("");
@@ -51,8 +50,7 @@ impl MetallumReleaseParts {
             .join(" / ");
         let artist_link = artists.first().cloned().unwrap().1;
 
-        let album_fragment = Html::parse_fragment(release.get(1).ok_or(Error::NoItem)?);
-        let (album, album_link) = album_fragment
+        let (album, album_link) = Html::parse_fragment(release.get(1).ok_or(Error::NoItem)?)
             .select(&selector)
             .map(|el| {
                 let album = el.text().collect::<Vec<_>>().join("");
@@ -64,8 +62,10 @@ impl MetallumReleaseParts {
             .cloned()
             .unwrap();
 
-        let release_date = release.get(4).ok_or(Error::NoItem)?.to_string();
-        let release_date = release_date
+        let release_date = release
+            .get(4)
+            .ok_or(Error::NoItem)?
+            .to_string()
             .replace("nd", "")
             .replace("st", "")
             .replace("rd", "")
