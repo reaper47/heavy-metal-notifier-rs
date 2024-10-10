@@ -67,13 +67,13 @@ impl Client for MainClient {
                         }
                     }
                     Err(err) => {
-                        error!("failed to decode response: {err}; page={page}; url={url}");
+                        error!("Failed to decode response: {err}; page={page}; url={url}");
                         None
                     }
                 }
             }
             Err(err) => {
-                error!("failed to fetch metallum releases: {err}; page={page}; url={url}");
+                error!("Failed to fetch metallum releases: {err}; page={page}; url={url}");
                 None
             }
         }
@@ -82,11 +82,11 @@ impl Client for MainClient {
 
 #[cfg(test)]
 pub mod tests {
+    use super::*;
+
     use std::{fs, io::Write, path::PathBuf};
 
     use crate::{calendar::Calendar, error::Error, scraper::wiki::scrape};
-
-    use super::*;
 
     #[cfg(test)]
     pub struct MockClient;
@@ -157,7 +157,7 @@ pub mod tests {
                         }
                         Err(err) => {
                             error!(
-                                "failed to decode response: {err}; page={page}; path={}",
+                                "Failed to decode response: {err}; page={page}; path={}",
                                 &path_str
                             );
                             None
@@ -166,7 +166,7 @@ pub mod tests {
                 }
                 Err(err) => {
                     error!(
-                        "failed to fetch metallum releases: {err}; page={page}; path={}",
+                        "Failed to fetch metallum releases: {err}; page={page}; path={}",
                         &path_str
                     );
                     None

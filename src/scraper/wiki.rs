@@ -2,6 +2,7 @@ use std::collections::HashMap;
 
 use scraper::{ElementRef, Html, Selector};
 use time::Month;
+use tracing::info;
 
 use crate::{
     calendar::{Calendar, Release},
@@ -11,6 +12,7 @@ use crate::{
 use super::client::Client;
 
 pub fn scrape(client: &impl Client, year: i32) -> Result<Calendar> {
+    info!("Scraping Wikipedia");
     let doc = client.get_calendar(year)?;
     Ok(extract_calendar(doc, year))
 }
@@ -37,7 +39,7 @@ fn extract_calendar(doc: Html, year: i32) -> Calendar {
         ("#table_December", Month::December),
     ]);
     tables.iter().for_each(|(&table_id, &month)| {
-        let selector = &Selector::parse(&table_id).unwrap();
+        let selector = &Selector::parse(table_id).unwrap();
         let tables = doc.select(selector).collect::<Vec<_>>();
         match tables.len() {
             2 if month == Month::November => {
@@ -67,6 +69,7 @@ fn extract_calendar(doc: Html, year: i32) -> Calendar {
         }
     });
 
+    info!("Calendar created");
     calendar
 }
 

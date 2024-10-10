@@ -2,12 +2,12 @@ use std::str::FromStr;
 
 use scraper::{Html, Selector};
 use serde::Deserialize;
+use tracing::info;
 
 use crate::{
     calendar::{Calendar, Release},
     error::{Error, Result},
 };
-
 use super::client::Client;
 
 #[derive(Deserialize)]
@@ -20,7 +20,7 @@ pub struct MetallumReleases {
     pub data: Vec<Vec<String>>,
 }
 
-struct MetallumReleaseParts {
+pub struct MetallumReleaseParts {
     artist: String,
     artist_link: String,
     album: String,
@@ -34,7 +34,7 @@ impl MetallumReleaseParts {
     fn from_release(release: Vec<String>) -> Result<Self> {
         let selector = Selector::parse("a").map_err(|_| Error::ScraperFail)?;
 
-        let artists = Html::parse_fragment(release.get(0).ok_or(Error::NoItem)?)
+        let artists = Html::parse_fragment(release.first().ok_or(Error::NoItem)?)
             .select(&selector)
             .map(|el| {
                 let artist = el.text().collect::<Vec<_>>().join("");
@@ -73,7 +73,7 @@ impl MetallumReleaseParts {
             .replace(",", "");
         let mut release_date = release_date.split_whitespace();
         let month = release_date.next().ok_or(Error::ParseFail)?;
-        let month = time::Month::from_str(&month).map_err(|_| Error::ParseFail)?;
+        let month = time::Month::from_str(month).map_err(|_| Error::ParseFail)?;
         let day = release_date
             .next()
             .ok_or(Error::ParseFail)?
@@ -100,10 +100,13 @@ impl MetallumReleaseParts {
 }
 
 pub fn scrape(client: &impl Client, year: i32) -> Result<Calendar> {
+    info!("Scraping The Metal Archives");
     let mut calendar = Calendar::new(year);
     let mut page = 0;
 
     loop {
+        info!("Fetching entries {} to {}", page * 100, page * 100 + 100);
+
         match client.fetch_metallum(page) {
             Some(releases) => {
                 for release in releases.data {
@@ -111,7 +114,12 @@ pub fn scrape(client: &impl Client, year: i32) -> Result<Calendar> {
                     calendar.add_release(
                         parts.release_date.month(),
                         parts.release_date.day(),
-                        Release::new(parts.artist, parts.album),
+                        Release::new(parts.artist, parts.album).with_metallum(
+                            parts.artist_link,
+                            parts.album_link,
+                            parts.release_type,
+                            parts.genre,
+                        ),
                     );
                 }
             }
@@ -121,6 +129,7 @@ pub fn scrape(client: &impl Client, year: i32) -> Result<Calendar> {
         page += 1;
     }
 
+    info!("Calendar created");
     Ok(calendar)
 }
 
@@ -232,10 +241,10 @@ mod tests {
 						Release::new("Morbus Kinski", "Blunt Force Boogey"),
 					]),
 					(15, vec![
-						Release::new("Blood Red Fog / Verge", "Prism of Darkness / Second Mortification"),
-						Release::new("War Dogs", "Only the Stars Are Left"),
-						Release::new("Bloodrust / Regicide", "Through Death We Reign"),
-						Release::new("Mortem", "Ilusión de sangre Pre-demo 1988"),
+						Release::new("Blood Red Fog / Verge", "Prism of Darkness / Second Mortification").with_metallum("https://www.metal-archives.com/bands/Blood_Red_Fog/42404", "https://www.metal-archives.com/albums/Blood_Red_Fog_-_Verge/Prism_of_Darkness_-_Second_Mortification/1263837", "Split", "Black Metal | Black Metal"),
+						Release::new("War Dogs", "Only the Stars Are Left").with_metallum("https://www.metal-archives.com/bands/War_Dogs/3540441681", "https://www.metal-archives.com/albums/War_Dogs/Only_the_Stars_Are_Left/1265853", "Full-length", "Heavy/Speed Metal"),
+						Release::new("Bloodrust / Regicide", "Through Death We Reign").with_metallum("https://www.metal-archives.com/bands/Bloodrust/3540478263", "https://www.metal-archives.com/albums/Bloodrust_-_Regicide/Through_Death_We_Reign/1268630", "Split", "Death Metal | Thrash Metal/Hardcore"),
+						Release::new("Mortem", "Ilusión de sangre Pre-demo 1988").with_metallum("https://www.metal-archives.com/bands/Mortem/4234", "https://www.metal-archives.com/albums/Mortem/Ilusi%C3%B3n_de_sangre_Pre-demo_1988/1269512", "Demo", "Death Metal"),
 					]),
 					(17, vec![
 						Release::new("Korkvak", "The Hermetic Ritual"),
@@ -319,10 +328,10 @@ mod tests {
 						Release::new("Kiko Loureiro", "Theory of Mind"),
 					]),
 					(21, vec![
-						Release::new("Reckless Manslaughter", "Sinking into Filth"),
-						Release::new("Midnightmares", "Shadow People"),
-						Release::new("The Fall of Creation", "Enlightenment"),
-						Release::new("Sissourlet", "Rituals in the Catacombs"),
+						Release::new("Reckless Manslaughter", "Sinking into Filth").with_metallum("https://www.metal-archives.com/bands/Reckless_Manslaughter/3540310538", "https://www.metal-archives.com/albums/Reckless_Manslaughter/Sinking_into_Filth/1262756", "Full-length", "Death Metal"),
+						Release::new("Midnightmares", "Shadow People").with_metallum("https://www.metal-archives.com/bands/Midnightmares/3540537876", "https://www.metal-archives.com/albums/Midnightmares/Shadow_People/1268797", "Full-length", "Symphonic Gothic Metal"),
+						Release::new("The Fall of Creation", "Enlightenment").with_metallum("https://www.metal-archives.com/bands/The_Fall_of_Creation/3540483665", "https://www.metal-archives.com/albums/The_Fall_of_Creation/Enlightenment/1275846", "Full-length", "Melodic Death/Groove Metal"),
+						Release::new("Sissourlet", "Rituals in the Catacombs").with_metallum("https://www.metal-archives.com/bands/Sissourlet/3540545064", "https://www.metal-archives.com/albums/Sissourlet/Rituals_in_the_Catacombs/1279821", "Full-length", "Hardcore/Death Metal"),
 					]),
 					(22, vec![
 						Release::new("Anialator", "Death Is Calling"),
@@ -345,40 +354,40 @@ mod tests {
 						Release::new("Triumpher", "Spirit Invictus"),
 						Release::new("Loudblast", "Altering Fates and Destinies"),
 						Release::new("Gaerea", "Coma"),
-						Release::new("Elephant Tree / Lowrider", "The Long Forever"),
-						Release::new("Haliphron", "Anatomy of Darkness"),
-						Release::new("Blackevil", "Praise the Communion Fire for the Unhallowed Sacrament"),
-						Release::new("Challenger", "Force of Nature"),
-						Release::new("Emasculator", "The Disfigured and the Divine"),
-						Release::new("Ghosts of Glaciers", "Eternal"),
-						Release::new("Nuclear", "Violent DNA"),
-						Release::new("Paysage d'Hiver", "Die Berge"),
-						Release::new("Leviticus", "MMXXIV"),
-						Release::new("Schammasch", "The Maldoror Chants: Old Ocean"),
-						Release::new("Autumn's Grief", "Dead Among the Living"),
-						Release::new("Ancient Curse", "Dimension 5"),
-						Release::new("Mindless Sinner", "Metal Merchants"),
-						Release::new("Disarray", "Religious Disease"),
-						Release::new("Psychonaut 4", "...of Mourning"),
-						Release::new("Gigan", "Anomalous Abstractigate Infinitessimus"),
-						Release::new("Sentient Horror", "In Service of the Dead"),
-						Release::new("Hatchet", "Leave No Soul"),
-						Release::new("Athena XIX", "Everflow Part 1: Frames of Humanity"),
-						Release::new("Iotunn", "Kinship"),
-						Release::new("Gigan", "The Gigan Cassette Box Set"),
-						Release::new("Devin Townsend", "PowerNerd"),
-						Release::new("Turkey Vulture", "On The List"),
-						Release::new("Smoke / Doomsday Profit", "Smoke // Doomsday Profit"),
-						Release::new("Taking the Head of Goliath", "Futility of the Flesh"),
-						Release::new("Antipope", "Doors of the Dead"),
-						Release::new("Alex Nunziati", "Impending Catastrophe"),
-						Release::new("Vokonis", "Transitions"),
-						Release::new("Mercyless", "Those Who Reign Below"),
-						Release::new("Sedimentum", "Derri​è​re les portes d'une arcane transcendante"),
-						Release::new("Adamantra", "Act III: Pareidolia of Depravity"),
-						Release::new("Stilverlight", "Dead Souls"),
-						Release::new("Perfidious", "Savouring His Flesh"),
-						Release::new("Bloodletter / Grozov / Acid Mass / Ninth Realm", "Faster than the Devil III"),
+						Release::new("Elephant Tree / Lowrider", "The Long Forever").with_metallum("https://www.metal-archives.com/bands/Elephant_Tree/3540386663", "https://www.metal-archives.com/albums/Elephant_Tree_-_Lowrider/The_Long_Forever/1257761", "Split", "Doom/Stoner Metal | Stoner Metal/Rock"),
+						Release::new("Haliphron", "Anatomy of Darkness").with_metallum("https://www.metal-archives.com/bands/Haliphron/3540522764", "https://www.metal-archives.com/albums/Haliphron/Anatomy_of_Darkness/1258547", "Full-length", "Symphonic Black/Death Metal"),
+						Release::new("Blackevil", "Praise the Communion Fire for the Unhallowed Sacrament").with_metallum("https://www.metal-archives.com/bands/Blackevil/3540390999", "https://www.metal-archives.com/albums/Blackevil/Praise_the_Communion_Fire_for_the_Unhallowed_Sacrament/1261696", "Full-length", "Black/Thrash Metal"),
+						Release::new("Challenger", "Force of Nature").with_metallum("https://www.metal-archives.com/bands/Challenger/3540452597", "https://www.metal-archives.com/albums/Challenger/Force_of_Nature/1261964", "Full-length", "Heavy/Speed Metal"),
+						Release::new("Emasculator", "The Disfigured and the Divine").with_metallum("https://www.metal-archives.com/bands/Emasculator/3540509792", "https://www.metal-archives.com/albums/Emasculator/The_Disfigured_and_the_Divine/1262625", "EP", "Brutal Death Metal"),
+						Release::new("Ghosts of Glaciers", "Eternal").with_metallum("https://www.metal-archives.com/bands/Ghosts_of_Glaciers/3540399472", "https://www.metal-archives.com/albums/Ghosts_of_Glaciers/Eternal/1263334", "Full-length", "Blackened Post-Metal"),
+						Release::new("Nuclear", "Violent DNA").with_metallum("https://www.metal-archives.com/bands/Nuclear/47481", "https://www.metal-archives.com/albums/Nuclear/Violent_DNA/1263388", "EP", "Thrash Metal"),
+						Release::new("Paysage d'Hiver", "Die Berge").with_metallum("https://www.metal-archives.com/bands/Paysage_d'Hiver/13417", "https://www.metal-archives.com/albums/Paysage_d'Hiver/Die_Berge/1263444", "Full-length", "Black Metal, Ambient"),
+						Release::new("Leviticus", "MMXXIV").with_metallum("https://www.metal-archives.com/bands/Leviticus/9513", "https://www.metal-archives.com/albums/Leviticus/MMXXIV/1263536", "EP", "Heavy Metal/Hard Rock"),
+						Release::new("Schammasch", "The Maldoror Chants: Old Ocean").with_metallum("https://www.metal-archives.com/bands/Schammasch/3540316251", "https://www.metal-archives.com/albums/Schammasch/The_Maldoror_Chants%3A_Old_Ocean/1263598", "Full-length", "Black/Death Metal (early); Avant-garde/Black Metal (later)"),
+						Release::new("Autumn's Grief", "Dead Among the Living").with_metallum("https://www.metal-archives.com/bands/Autumn%27s_Grief/3540496003", "https://www.metal-archives.com/albums/Autumn%27s_Grief/Dead_Among_the_Living/1263677", "Full-length", "Symphonic Metal"),
+						Release::new("Ancient Curse", "Dimension 5").with_metallum("https://www.metal-archives.com/bands/Ancient_Curse/1699", "https://www.metal-archives.com/albums/Ancient_Curse/Dimension_5/1263717", "Full-length", "Progressive Heavy/Power Metal"),
+						Release::new("Mindless Sinner", "Metal Merchants").with_metallum("https://www.metal-archives.com/bands/Mindless_Sinner/23990", "https://www.metal-archives.com/albums/Mindless_Sinner/Metal_Merchants/1264122", "Full-length", "Heavy Metal"),
+						Release::new("Disarray", "Religious Disease").with_metallum("https://www.metal-archives.com/bands/Disarray/3540529039", "https://www.metal-archives.com/albums/Disarray/Religious_Disease/1265036", "Full-length", "Thrash Metal"),
+						Release::new("Psychonaut 4", "...of Mourning").with_metallum("https://www.metal-archives.com/bands/Psychonaut_4/3540329261", "https://www.metal-archives.com/albums/Psychonaut_4/...of_Mourning/1265317", "Full-length", "Depressive Black Metal/Rock"),
+						Release::new("Gigan", "Anomalous Abstractigate Infinitessimus").with_metallum("https://www.metal-archives.com/bands/Gigan/108235", "https://www.metal-archives.com/albums/Gigan/Anomalous_Abstractigate_Infinitessimus/1265799", "Full-length", "Progressive/Technical Death Metal"),
+						Release::new("Sentient Horror", "In Service of the Dead").with_metallum("https://www.metal-archives.com/bands/Sentient_Horror/3540420358", "https://www.metal-archives.com/albums/Sentient_Horror/In_Service_of_the_Dead/1265850", "Full-length", "Death Metal"),
+						Release::new("Hatchet", "Leave No Soul").with_metallum("https://www.metal-archives.com/bands/Hatchet/75808", "https://www.metal-archives.com/albums/Hatchet/Leave_No_Soul/1265863", "EP", "Thrash Metal"),
+						Release::new("Athena XIX", "Everflow Part 1: Frames of Humanity").with_metallum("https://www.metal-archives.com/bands/Athena_XIX/707", "https://www.metal-archives.com/albums/Athena_XIX/Everflow_Part_1%3A_Frames_of_Humanity/1265971", "Full-length", "Progressive/Power Metal"),
+						Release::new("Iotunn", "Kinship").with_metallum("https://www.metal-archives.com/bands/Iotunn/3540408017", "https://www.metal-archives.com/albums/Iotunn/Kinship/1266004", "Full-length", "Progressive Power Metal (early); Progressive Melodic Death Metal (later)"),
+						Release::new("Gigan", "The Gigan Cassette Box Set").with_metallum("https://www.metal-archives.com/bands/Gigan/108235", "https://www.metal-archives.com/albums/Gigan/The_Gigan_Cassette_Box_Set/1266302", "Boxed set", "Progressive/Technical Death Metal"),
+						Release::new("Devin Townsend", "PowerNerd").with_metallum("https://www.metal-archives.com/bands/Devin_Townsend/1245", "https://www.metal-archives.com/albums/Devin_Townsend/PowerNerd/1266334", "Full-length", "Progressive Metal/Rock, Ambient"),
+						Release::new("Turkey Vulture", "On The List").with_metallum("https://www.metal-archives.com/bands/Turkey_Vulture/3540483095", "https://www.metal-archives.com/albums/Turkey_Vulture/On_The_List/1266491", "EP", "Stoner/Doom Metal"),
+						Release::new("Smoke / Doomsday Profit", "Smoke // Doomsday Profit").with_metallum("https://www.metal-archives.com/bands/Smoke/3540502223", "https://www.metal-archives.com/albums/Smoke_-_Doomsday_Profit/Smoke_--_Doomsday_Profit/1266534", "Split", "Stoner/Doom Metal | Stoner/Doom Metal"),
+						Release::new("Taking the Head of Goliath", "Futility of the Flesh").with_metallum("https://www.metal-archives.com/bands/Taking_the_Head_of_Goliath/3540424198", "https://www.metal-archives.com/albums/Taking_the_Head_of_Goliath/Futility_of_the_Flesh/1266668", "EP", "Brutal Death Metal"),
+						Release::new("Antipope", "Doors of the Dead").with_metallum("https://www.metal-archives.com/bands/Antipope/85290", "https://www.metal-archives.com/albums/Antipope/Doors_of_the_Dead/1266671", "Full-length", "Progressive Black Metal (early); Progressive/Gothic/Industrial Metal (later)"),
+						Release::new("Alex Nunziati", "Impending Catastrophe").with_metallum("https://www.metal-archives.com/bands/Alex_Nunziati/3540506323", "https://www.metal-archives.com/albums/Alex_Nunziati/Impending_Catastrophe/1266673", "Full-length", "Heavy Metal, Thrash Metal"),
+						Release::new("Vokonis", "Transitions").with_metallum("https://www.metal-archives.com/bands/Vokonis/3540411114", "https://www.metal-archives.com/albums/Vokonis/Transitions/1267264", "Full-length", "Stoner/Doom Metal"),
+						Release::new("Mercyless", "Those Who Reign Below").with_metallum("https://www.metal-archives.com/bands/Mercyless/7544", "https://www.metal-archives.com/albums/Mercyless/Those_Who_Reign_Below/1267629", "Full-length", "Death/Thrash Metal"),
+						Release::new("Sedimentum", "Derri​è​re les portes d'une arcane transcendante").with_metallum("https://www.metal-archives.com/bands/Sedimentum/3540455227", "https://www.metal-archives.com/albums/Sedimentum/Derri%E2%80%8B%C3%A8%E2%80%8Bre_les_portes_d%27une_arcane_transcendante/1267941", "EP", "Death Metal"),
+						Release::new("Adamantra", "Act III: Pareidolia of Depravity").with_metallum("https://www.metal-archives.com/bands/Adamantra/84533", "https://www.metal-archives.com/albums/Adamantra/Act_III%3A_Pareidolia_of_Depravity/1268265", "Full-length", "Progressive/Power Metal"),
+						Release::new("Stilverlight", "Dead Souls").with_metallum("https://www.metal-archives.com/bands/Stilverlight/3540389416", "https://www.metal-archives.com/albums/Stilverlight/Dead_Souls/1268317", "Full-length", "Melodic Power Metal"),
+						Release::new("Perfidious", "Savouring His Flesh").with_metallum("https://www.metal-archives.com/bands/Perfidious/3540395457", "https://www.metal-archives.com/albums/Perfidious/Savouring_His_Flesh/1268454", "Full-length", "Death Metal"),
+						Release::new("Bloodletter / Grozov / Acid Mass / Ninth Realm", "Faster than the Devil III").with_metallum("https://www.metal-archives.com/bands/Bloodletter/3540386435", "https://www.metal-archives.com/albums/Bloodletter_-_Grozov_-_Acid_Mass", "Split", "Thrash Metal (early); Melodic Thrash Metal (later) | Black Metal (early); Black/Power/Thrash Metal (later) | Thrash Metal | Crossover/Thrash Metal"),
 						Release::new("Ataraxie", "Le déclin"),
 						Release::new("Thaw", "Fading Backwards"),
 						Release::new("Behemoth", "XXX Years ov Blasphemy"),
@@ -426,14 +435,14 @@ mod tests {
 						Release::new("Pratanallis", "雨色Gentiana"),
 					]),
 					(28, vec![
-						Release::new("Kaivs", "After the Flesh"),
-						Release::new("Rotgod", "Polemics and Obscenity - Part 2"),
-						Release::new("Mental Torment", "Dead Shot Revival"),
-						Release::new("High Inquisitor Woe", "Painted Vision of an Era Forlorn"),
-						Release::new("Imagine a Boot", "Fearless Werewolf Killers"),
+						Release::new("Kaivs", "After the Flesh").with_metallum("https://www.metal-archives.com/bands/Kaivs/3540519744", "https://www.metal-archives.com/albums/Kaivs/After_the_Flesh/1255256", "Full-length", "Death Metal"),
+						Release::new("Rotgod", "Polemics and Obscenity - Part 2").with_metallum("https://www.metal-archives.com/bands/Rotgod/3540491454", "https://www.metal-archives.com/albums/Rotgod/Polemics_and_Obscenity_-_Part_2/1273061", "EP", "Thrash/Death Metal/Grindcore"),
+						Release::new("Mental Torment", "Dead Shot Revival").with_metallum("https://www.metal-archives.com/bands/Mental_Torment/3540358661", "https://www.metal-archives.com/albums/Mental_Torment/Dead_Shot_Revival/1273415", "Full-length", "Death/Funeral Doom Metal"),
+						Release::new("High Inquisitor Woe", "Painted Vision of an Era Forlorn").with_metallum("https://www.metal-archives.com/bands/High_Inquisitor_Woe/3540403857", "https://www.metal-archives.com/albums/High_Inquisitor_Woe/Painted_Vision_of_an_Era_Forlorn/1278786", "Full-length", "Doom Metal"),
+						Release::new("Imagine a Boot", "Fearless Werewolf Killers").with_metallum("https://www.metal-archives.com/bands/Imagine_a_Boot/3540551374", "https://www.metal-archives.com/albums/Imagine_a_Boot/Fearless_Werewolf_Killers/1279292", "Demo", "Raw Black/Heavy Metal/Oi!"),
 					]),
 					(29, vec![
-						Release::new("Vulgar Mephitis", "Demo 2024"),
+						Release::new("Vulgar Mephitis", "Demo 2024").with_metallum("https://www.metal-archives.com/bands/Vulgar_Mephitis/3540508775", "https://www.metal-archives.com/albums/Vulgar_Mephitis/Demo_2024/1279652", "Demo", "Brutal Death Metal"),
 					]),
 					(30, vec![
 						Release::new("Necromoon", "War and Obedience"),
@@ -526,10 +535,10 @@ mod tests {
 						Release::new("Drift of Genes", "Room"),
 					]),
 					(2, vec![
-						Release::new("Ethereal", "Downfall"),
-						Release::new("Lenguaje de Viboras", "Kira"),
-						Release::new("Raptore", "Renaissance"),
-						Release::new("Abomination Impurity", "Crawling In The Depth"),
+						Release::new("Ethereal", "Downfall").with_metallum("https://www.metal-archives.com/bands/Ethereal/7428", "https://www.metal-archives.com/albums/Ethereal/Downfall/1256633", "Full-length", "Progressive Gothic/Doom Metal"),
+						Release::new("Lenguaje de Viboras", "Kira").with_metallum("https://www.metal-archives.com/bands/Lenguaje_de_Viboras/3540500217", "https://www.metal-archives.com/albums/Lenguaje_de_Viboras/Kira/1262099", "EP", "Sludge/Stoner Metal"),
+						Release::new("Raptore", "Renaissance").with_metallum("https://www.metal-archives.com/bands/Raptore/3540383257", "https://www.metal-archives.com/albums/Raptore/Renaissance/1270237", "Full-length", "Heavy Metal"),
+						Release::new("Abomination Impurity", "Crawling In The Depth").with_metallum("https://www.metal-archives.com/bands/Abomination_Impurity/3540424519", "https://www.metal-archives.com/albums/Abomination_Impurity/Crawling_In_The_Depth/1274915", "EP", "Brutal Death Metal"),
 					]),
 					(3, vec![
 						Release::new("Deadspace", "The Dark Enlightenment"),
@@ -594,48 +603,48 @@ mod tests {
 						Release::new("Doubting Thompson", "Lizard Brain Directives"),
 					]),
 					(13, vec![
-						Release::new("Incisor", "Harvester Of Indecent Letany"),
+						Release::new("Incisor", "Harvester Of Indecent Letany").with_metallum("https://www.metal-archives.com/bands/Incisor/3540276836", "https://www.metal-archives.com/albums/Incisor/Harvester_Of_Indecent_Letany/1280142", "Compilation", "Death Metal"),
 					]),
 					(14, vec![
 						Release::new("Kromlek", "III-III & Upphaf"),
 						Release::new("Lying Figures", "Inheritance"),
 					]),
 					(15, vec![
-						Release::new("Warfarer", "A Tale Beyond the Pale"),
-						Release::new("Odyrmos", "The Neverending Journey"),
-						Release::new("Aptorian Demon", "Liv tar slutt"),
-						Release::new("Thy Catafalque", "XII: A gyönyörü álmok ezután jönnek"),
-						Release::new("Toxaemia", "Rejected Souls of Kerberus"),
-						Release::new("Veilburner", "The Duality of Decapitation and Wisdom"),
-						Release::new("Starchaser", "Into the Great Unknown"),
-						Release::new("The Foreshadowing", "New Wave Order"),
-						Release::new("The Mosaic Window", "Hemasanctum"),
-						Release::new("Mammoth Grinder", "Undying Spectral Resonance"),
-						Release::new("Tribal Gaze / Deadbody", "Deadbody / Tribal Gaze"),
-						Release::new("Monolithe", "Black Hole District"),
-						Release::new("As I Lay Dying", "Through Storms Ahead"),
-						Release::new("Faüst", "Death Galore"),
-						Release::new("Worm Shepherd", "Hunger"),
-						Release::new("Thanatos", "Four Decades of Death"),
-						Release::new("Synthwailer", "Cruciform"),
-						Release::new("Nolove", "La mort nous a séparés"),
-						Release::new("Empires of Eden", "Guardians of Time"),
-						Release::new("Time Lurker", "Emprise"),
-						Release::new("Trollcave", "Adoration of the Abyssal Trespasser"),
-						Release::new("Wasted Youth", "Young and Bored - The Complete Wasted Youth"),
-						Release::new("Primal Code", "Opaque Fixation"),
-						Release::new("Opus Irae", "Into the Endless Night"),
-						Release::new("Spider God", "Possess the Devil"),
-						Release::new("Thunder and Lightning", "Of Wrath and Ruin"),
-						Release::new("Apocalypse", " Pandæmonium"),
-						Release::new("Oriska", "Oriska"),
-						Release::new("Violent Definition", "Progressive Obsoletion"),
-						Release::new("Sergeant Thunderhoof", "The Ghost of Badon Hill"),
+						Release::new("Warfarer", "A Tale Beyond the Pale").with_metallum("https://www.metal-archives.com/bands/Warfarer/3540462212", "https://www.metal-archives.com/albums/Warfarer/A_Tale_Beyond_the_Pale/1256668", "Full-length", "Melodic Death/Folk Metal"),
+						Release::new("Odyrmos", "The Neverending Journey").with_metallum("https://www.metal-archives.com/bands/Odyrmos/3540490499", "https://www.metal-archives.com/albums/Odyrmos/The_Neverending_Journey/1265060", "Demo", "Atmospheric Black Metal, Dark Ambient"),
+						Release::new("Aptorian Demon", "Liv tar slutt").with_metallum("https://www.metal-archives.com/bands/Aptorian_Demon/45799", "https://www.metal-archives.com/albums/Aptorian_Demon/Liv_tar_slutt/1265538", "Full-length", "Black Metal"),
+						Release::new("Thy Catafalque", "XII: A gyönyörü álmok ezután jönnek").with_metallum("https://www.metal-archives.com/bands/Thy_Catafalque/31620", "https://www.metal-archives.com/albums/Thy_Catafalque/XII%3A_A_gy%C3%B6ny%C3%B6r%C3%BC_%C3%A1lmok_ezut%C3%A1n_j%C3%B6nnek/1265915", "Full-length", "Avant-garde Metal"),
+						Release::new("Toxaemia", "Rejected Souls of Kerberus").with_metallum("https://www.metal-archives.com/bands/Toxaemia/21464", "https://www.metal-archives.com/albums/Toxaemia/Rejected_Souls_of_Kerberus/1266096", "Full-length", "Death Metal"),
+						Release::new("Veilburner", "The Duality of Decapitation and Wisdom").with_metallum("https://www.metal-archives.com/bands/Veilburner/3540385778", "https://www.metal-archives.com/albums/Veilburner/The_Duality_of_Decapitation_and_Wisdom/1269329", "Full-length", "Black/Death Metal"),
+						Release::new("Starchaser", "Into the Great Unknown").with_metallum("https://www.metal-archives.com/bands/Starchaser/3540505939", "https://www.metal-archives.com/albums/Starchaser/Into_the_Great_Unknown/1269976", "Full-length", "Heavy Metal"),
+						Release::new("The Foreshadowing", "New Wave Order").with_metallum("https://www.metal-archives.com/bands/The_Foreshadowing/108312", "https://www.metal-archives.com/albums/The_Foreshadowing/New_Wave_Order/1270024", "Full-length", "Gothic/Doom Metal"),
+						Release::new("The Mosaic Window", "Hemasanctum").with_metallum("https://www.metal-archives.com/bands/The_Mosaic_Window/3540494835", "https://www.metal-archives.com/albums/The_Mosaic_Window/Hemasanctum/1270721", "Full-length", "Melodic Black Metal"),
+						Release::new("Mammoth Grinder", "Undying Spectral Resonance").with_metallum("https://www.metal-archives.com/bands/Mammoth_Grinder/3540294181", "https://www.metal-archives.com/albums/Mammoth_Grinder/Undying_Spectral_Resonance/1270876", "EP", "Hardcore Punk/Sludge Metal (early); Death Metal/Hardcore (later)"),
+						Release::new("Tribal Gaze / Deadbody", "Deadbody / Tribal Gaze").with_metallum("https://www.metal-archives.com/bands/Tribal_Gaze/3540483981", "https://www.metal-archives.com/albums/Tribal_Gaze_-_Deadbody/Deadbody_-_Tribal_Gaze/1272378", "Split", "Death Metal | Death Metal/Hardcore"),
+						Release::new("Monolithe", "Black Hole District").with_metallum("https://www.metal-archives.com/bands/Monolithe/13707", "https://www.metal-archives.com/albums/Monolithe/Black_Hole_District/1272417", "Full-length", "Funeral Doom Metal (early); Melodic Death/Doom Metal (later)"),
+						Release::new("As I Lay Dying", "Through Storms Ahead").with_metallum("https://www.metal-archives.com/bands/As_I_Lay_Dying/20825", "https://www.metal-archives.com/albums/As_I_Lay_Dying/Through_Storms_Ahead/1272713", "Full-length", "Metalcore"),
+						Release::new("Faüst", "Death Galore").with_metallum("https://www.metal-archives.com/bands/Fa%C3%BCst/3540473797", "https://www.metal-archives.com/albums/Fa%C3%BCst/Death_Galore/1272986", "Full-length", "Thrash Metal"),
+						Release::new("Worm Shepherd", "Hunger").with_metallum("https://www.metal-archives.com/bands/Worm_Shepherd/3540500546", "https://www.metal-archives.com/albums/Worm_Shepherd/Hunger/1274050", "Full-length", "Symphonic Deathcore"),
+						Release::new("Thanatos", "Four Decades of Death").with_metallum("https://www.metal-archives.com/bands/Thanatos/293", "https://www.metal-archives.com/albums/Thanatos/Four_Decades_of_Death/1274598", "Compilation", "Death/Thrash Metal"),
+						Release::new("Synthwailer", "Cruciform").with_metallum("https://www.metal-archives.com/bands/Synthwailer/3540486233", "https://www.metal-archives.com/albums/Synthwailer/Cruciform/1275480", "Full-length", "Symphonic Power/Heavy Metal"),
+						Release::new("Nolove", "La mort nous a séparés").with_metallum("https://www.metal-archives.com/bands/Nolove/3540531420", "https://www.metal-archives.com/albums/Nolove/La_mort_nous_a_s%C3%A9par%C3%A9s/1275727", "Single", "Experimental/Depressive Black Metal, Post-Rock"),
+						Release::new("Empires of Eden", "Guardians of Time").with_metallum("https://www.metal-archives.com/bands/Empires_of_Eden/3540282087", "https://www.metal-archives.com/albums/Empires_of_Eden/Guardians_of_Time/1277228", "Full-length", "Melodic Power Metal"),
+						Release::new("Time Lurker", "Emprise").with_metallum("https://www.metal-archives.com/bands/Time_Lurker/3540419145", "https://www.metal-archives.com/albums/Time_Lurker/Emprise/1277910", "Full-length", "Atmospheric Black Metal"),
+						Release::new("Trollcave", "Adoration of the Abyssal Trespasser").with_metallum("https://www.metal-archives.com/bands/Trollcave/3540499736", "https://www.metal-archives.com/albums/Trollcave/Adoration_of_the_Abyssal_Trespasser/1278354", "EP", "Funeral Doom/Death Metal"),
+						Release::new("Wasted Youth", "Young and Bored - The Complete Wasted Youth").with_metallum("https://www.metal-archives.com/bands/Wasted_Youth/14351", "https://www.metal-archives.com/albums/Wasted_Youth/Young_and_Bored_-_The_Complete_Wasted_Youth/1278681", "Compilation", "Hardcore Punk (early); Thrash Metal (later)"),
+						Release::new("Primal Code", "Opaque Fixation").with_metallum("https://www.metal-archives.com/bands/Primal_Code/3540509020", "https://www.metal-archives.com/albums/Primal_Code/Opaque_Fixation/1278865", "Full-length", "Death Metal"),
+						Release::new("Opus Irae", "Into the Endless Night").with_metallum("https://www.metal-archives.com/bands/Opus_Irae/3540405662", "https://www.metal-archives.com/albums/Opus_Irae/Into_the_Endless_Night/1279021", "Full-length", "Symphonic Black Metal"),
+						Release::new("Spider God", "Possess the Devil").with_metallum("https://www.metal-archives.com/bands/Spider_God/3540476120", "https://www.metal-archives.com/albums/Spider_God/Possess_the_Devil/1279119", "Full-length", "Melodic Black Metal"),
+						Release::new("Thunder and Lightning", "Of Wrath and Ruin").with_metallum("https://www.metal-archives.com/bands/Thunder_and_Lightning/50661", "https://www.metal-archives.com/albums/Thunder_and_Lightning/Of_Wrath_and_Ruin/1279545", "Full-length", "Melodic Power Metal"),
+						Release::new("Apocalypse", " Pandæmonium").with_metallum("https://www.metal-archives.com/bands/Apocalypse/3540449107", "https://www.metal-archives.com/albums/Apocalypse/Pand%C3%A6monium/1279607", "Full-length", "Black/Viking Metal, Death/Thrash Metal"),
+						Release::new("Oriska", "Oriska").with_metallum("https://www.metal-archives.com/bands/Oriska/3540534992", "https://www.metal-archives.com/albums/Oriska/Oriska/1279811", "Full-length", "Post-Black/Doom Metal"),
+						Release::new("Violent Definition", "Progressive Obsoletion").with_metallum("https://www.metal-archives.com/bands/Violent_Definition/3540303408", "https://www.metal-archives.com/albums/Violent_Definition/Progressive_Obsoletion/1280450", "Full-length", "Thrash Metal"),
+						Release::new("Sergeant Thunderhoof", "The Ghost of Badon Hill").with_metallum("https://www.metal-archives.com/bands/Sergeant_Thunderhoof/3540379484", "https://www.metal-archives.com/albums/Sergeant_Thunderhoof/The_Ghost_of_Badon_Hill/1280491", "Full-length", "Psychedelic Stoner/Doom Metal"),
 					]),
 					(19, vec![
-						Release::new("Miseri Silentium", "Live at Darkness Conspiracy 2024"),
-						Release::new("Stenched", "Purulence Gushing from the Coffin"),
-						Release::new("Chain Wolf / Nuke / Evil Army / Whipstriker", "Metal Punk, Vol. I"),
+						Release::new("Miseri Silentium", "Live at Darkness Conspiracy 2024").with_metallum("https://www.metal-archives.com/bands/Miseri_Silentium/3540501270", "https://www.metal-archives.com/albums/Miseri_Silentium/Live_at_Darkness_Conspiracy_2024/1278607", "Live album", "Black Metal"),
+						Release::new("Stenched", "Purulence Gushing from the Coffin").with_metallum("https://www.metal-archives.com/bands/Stenched/3540526785", "https://www.metal-archives.com/albums/Stenched/Purulence_Gushing_from_the_Coffin/1279043", "Full-length", "Death Metal"),
+						Release::new("Chain Wolf / Nuke / Evil Army / Whipstriker", "Metal Punk, Vol. I").with_metallum("https://www.metal-archives.com/bands/Chain_Wolf/3540479708", "https://www.metal-archives.com/albums/Chain_Wolf_-_Nuke_-_Evil_Army_-_Whipstriker/Metal_Punk%2C_Vol._I/1279083", "Split", "Thrash Metal/Crossover | Speed Metal | Thrash Metal | Heavy/Speed Metal"),
 					]),
 					(20, vec![
 						Release::new("Sunrot / Body Void", "SUNROT // BODY VOID"),
@@ -738,20 +747,20 @@ mod tests {
 						Release::new("Horrorborn", "Illuminating Doom"),
 					]),
 					(6, vec![
-						Release::new("Fermentor", "Release Me"),
-						Release::new("Asterise", "Tale of a Wandering Soul"),
-						Release::new("Nanowar of Steel", "XX Years of Steel"),
-						Release::new("The Old Dead Tree", "Second Thoughts"),
-						Release::new("Pillar of Light", "Caldera"),
-						Release::new("Nolove", "Nobody Can Save You"),
-						Release::new("Tethra", "Withered Heart Standing"),
-						Release::new("Night in Gales", "Shadowreaper"),
-						Release::new("Within Silence", "The Eclipse of Worlds"),
-						Release::new("Tarja", "Rocking Heels: Live at Hellfest"),
-						Release::new("Aara", "Eiger"),
-						Release::new("Panzerchrist", "Maleficium - Part 1"),
-						Release::new("Tales of Blood", "Breath of Repugnance"),
-						Release::new("Desert Near the End", "Tides of Time"),
+						Release::new("Fermentor", "Release Me").with_metallum("https://www.metal-archives.com/bands/Fermentor/3540404731", "https://www.metal-archives.com/albums/Fermentor/Release_Me/1273180", "Full-length", "Death Metal"),
+						Release::new("Asterise", "Tale of a Wandering Soul").with_metallum("https://www.metal-archives.com/bands/Fermentor/3540404731", "https://www.metal-archives.com/albums/Fermentor/Release_Me/1273180", "Full-length", "Death Metal"),
+						Release::new("Nanowar of Steel", "XX Years of Steel").with_metallum("https://www.metal-archives.com/bands/Nanowar_of_Steel/3540261755", "https://www.metal-archives.com/albums/Nanowar_of_Steel/XX_Years_of_Steel/1274421", "Compilation", "Heavy/Power Metal/Hard Rock"),
+						Release::new("The Old Dead Tree", "Second Thoughts").with_metallum("https://www.metal-archives.com/bands/The_Old_Dead_Tree/8297", "https://www.metal-archives.com/albums/The_Old_Dead_Tree/Second_Thoughts/1274538", "Full-length", "Gothic Metal"),
+						Release::new("Pillar of Light", "Caldera").with_metallum("https://www.metal-archives.com/bands/Pillar_of_Light/3540548599", "https://www.metal-archives.com/albums/Pillar_of_Light/Caldera/1274923", "Full-length", "Doom/Sludge/Post-Metal"),
+						Release::new("Nolove", "Nobody Can Save You").with_metallum("https://www.metal-archives.com/bands/Nolove/3540531420", "https://www.metal-archives.com/albums/Nolove/Nobody_Can_Save_You/1276304", "Full-length", "Experimental/Depressive Black Metal, Post-Rock"),
+						Release::new("Tethra", "Withered Heart Standing").with_metallum("https://www.metal-archives.com/bands/Tethra/3540317188", "https://www.metal-archives.com/albums/Tethra/Withered_Heart_Standing/1276477", "Full-length", "Death/Doom Metal"),
+						Release::new("Night in Gales", "Shadowreaper").with_metallum("https://www.metal-archives.com/bands/Night_in_Gales/817", "https://www.metal-archives.com/albums/Night_in_Gales/Shadowreaper/1276707", "Full-length", "Melodic Death Metal"),
+						Release::new("Within Silence", "The Eclipse of Worlds").with_metallum("https://www.metal-archives.com/bands/Within_Silence/3540396066", "https://www.metal-archives.com/albums/Within_Silence/The_Eclipse_of_Worlds/1276946", "Full-length", "Power Metal"),
+						Release::new("Tarja", "Rocking Heels: Live at Hellfest").with_metallum("https://www.metal-archives.com/bands/Tarja/110710", "https://www.metal-archives.com/albums/Tarja/Rocking_Heels%3A_Live_at_Hellfest/1277113", "Live album", "Symphonic Metal/Rock, Neoclassical"),
+						Release::new("Aara", "Eiger").with_metallum("https://www.metal-archives.com/bands/Aara/3540451086", "https://www.metal-archives.com/albums/Aara/Eiger/1277867", "Full-length", "Atmospheric Black Metal"),
+						Release::new("Panzerchrist", "Maleficium - Part 1").with_metallum("https://www.metal-archives.com/bands/Panzerchrist/2864", "https://www.metal-archives.com/albums/Panzerchrist/Maleficium_-_Part_1/1278810", "Full-length", "Death/Black Metal"),
+						Release::new("Tales of Blood", "Breath of Repugnance").with_metallum("https://www.metal-archives.com/bands/Tales_of_Blood/10656", "https://www.metal-archives.com/albums/Tales_of_Blood/Breath_of_Repugnance/1278857", "Full-length", "Death Metal"),
+						Release::new("Desert Near the End", "Tides of Time").with_metallum("https://www.metal-archives.com/bands/Desert_Near_the_End/3540370893", "https://www.metal-archives.com/albums/Desert_Near_the_End/Tides_of_Time/1280001", "Full-length", "Power/Thrash Metal"),
 					]),
 					(7, vec![
 						Release::new("STP", "Maoist Jihad: Death to Collaborators"),

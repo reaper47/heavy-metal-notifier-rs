@@ -3,7 +3,7 @@ pub mod metallum;
 pub mod wiki;
 
 #[cfg(test)]
-mod test_utils {
+pub(crate) mod test_utils {
     use crate::calendar::Calendar;
 
     pub fn compare_calendars(got: Calendar, want: Calendar) {

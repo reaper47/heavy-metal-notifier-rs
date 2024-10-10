@@ -2,7 +2,7 @@ use std::process::Command;
 
 fn main() {
     let status = Command::new("npm")
-        .args(&["--prefix", "./web/app", "install", "./web/app"])
+        .args(["--prefix", "./web/app", "install", "./web/app"])
         .status()
         .expect("Failed to install npm packages");
 
@@ -11,7 +11,7 @@ fn main() {
     }
 
     let status = Command::new("npm")
-        .args(&["--prefix", "./web/app", "run", "build"])
+        .args(["--prefix", "./web/app", "run", "build"])
         .status()
         .expect("Failed to build the web app");
 

@@ -17,8 +17,9 @@ use super::ModelManager;
 pub struct Artist {
     pub id: i32,
     pub name: String,
+    pub genre: Option<String>,
     pub url_bandcamp: Option<String>,
-    pub url_metallum: String,
+    pub url_metallum: Option<String>,
 }
 
 /// Represents a new artist to be inserted into the database.
@@ -29,29 +30,33 @@ pub struct Artist {
 #[diesel(table_name = super::schema::artists)]
 struct ArtistForInsert {
     pub name: String,
+    pub genre: Option<String>,
     pub url_bandcamp: Option<String>,
-    pub url_metallum: String,
+    pub url_metallum: Option<String>,
 }
 
 impl ArtistForInsert {
-    pub fn new(client: &impl Client, name: impl Into<String>) -> Self {
+    pub fn new(
+        client: &impl Client,
+        name: impl Into<String>,
+        genre: Option<String>,
+        url_metallum: Option<String>,
+    ) -> Self {
         let name: String = name.into();
-        let url_name = name.replace(" ", "_");
 
         let url_bandcamp = if config().IS_PROD {
-            if let Some(url) = client.get_bandcamp_link(name.clone()) {
-                Some(url.to_string())
-            } else {
-                None
-            }
+            client
+                .get_bandcamp_link(name.clone())
+                .map(|url| url.to_string())
         } else {
             None
         };
 
         Self {
-            name: name.clone(),
+            name,
+            genre,
             url_bandcamp,
-            url_metallum: format!("https://www.metal-archives.com/bands/{url_name}"),
+            url_metallum,
         }
     }
 }
@@ -73,8 +78,9 @@ pub struct Release {
     pub day: i32,
     pub artist_id: i32,
     pub album: String,
+    pub release_type: Option<String>,
     pub url_youtube: String,
-    pub url_metallum: String,
+    pub url_metallum: Option<String>,
 }
 
 /// Represents a new release to be inserted into the database.
@@ -90,8 +96,9 @@ struct ReleaseForInsert {
     pub day: i32,
     pub artist_id: i32,
     pub album: String,
+    pub release_type: Option<String>,
     pub url_youtube: String,
-    pub url_metallum: String,
+    pub url_metallum: Option<String>,
 }
 
 /// `CalendarBmc` is a backend model controller responsible for
@@ -122,7 +129,18 @@ impl CalendarBmc {
                         let artist_name = release.artist.clone();
 
                         let artist_id: i32 = match diesel::insert_or_ignore_into(artists::table)
-                            .values(&ArtistForInsert::new(client, &artist_name))
+                            .values(&ArtistForInsert::new(
+                                client,
+                                &artist_name,
+                                release
+                                    .metallum_info
+                                    .as_ref()
+                                    .map(|info| info.genre.clone()),
+                                release
+                                    .metallum_info
+                                    .as_ref()
+                                    .map(|info| info.artist_link.clone()),
+                            ))
                             .returning(artists::id)
                             .get_result(conn)
                         {
@@ -140,12 +158,6 @@ impl CalendarBmc {
                         let url_youtube =
                             format!("https://www.youtube.com/results?search_query={query_encoded}");
 
-                        let name_metallum = artist_name.replace(" ", "_");
-                        let album_metallum = release.album.clone().replace(" ", "_");
-                        let url_metallum = format!(
-                            "https://www.metal-archives.com/bands/{name_metallum}/{album_metallum}"
-                        );
-
                         diesel::insert_into(releases::table)
                             .values(&ReleaseForInsert {
                                 year: calendar.year,
@@ -153,8 +165,15 @@ impl CalendarBmc {
                                 day: *day as i32,
                                 artist_id,
                                 album: release.album.clone(),
+                                release_type: release
+                                    .metallum_info
+                                    .as_ref()
+                                    .map(|info| info.release_type.clone()),
                                 url_youtube,
-                                url_metallum,
+                                url_metallum: release
+                                    .metallum_info
+                                    .as_ref()
+                                    .map(|info| info.album_link.clone()),
                             })
                             .execute(conn)?;
                     }
